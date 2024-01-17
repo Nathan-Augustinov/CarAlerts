@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1004713708148",
+    "project_id": "caralerts-b4390",
+    "storage_bucket": "caralerts-b4390.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1004713708148:android:41b1c9c2f336f814719f21",
+        "android_client_info": {
+          "package_name": "com.example.car_alerts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBU30IlODSYCZ2uxZjCqovLTZv9oY9hi-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
