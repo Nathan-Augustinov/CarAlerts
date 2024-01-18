@@ -1,10 +1,12 @@
-import 'package:car_alerts/screens/mainScreen.dart';
+import 'package:car_alerts/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/authentication.dart';
 
 class SignInScreen extends StatelessWidget {
   final AuthenticationService _authService = AuthenticationService();
+
+  SignInScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,11 +15,11 @@ class SignInScreen extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () async {
             User? user = await _authService.signInWithGoogle();
-            if (user != null) {
+            if (user != null && context.mounted) {
               // Navigate to Home Screen
               Navigator.pushReplacement(
                 context, 
-                MaterialPageRoute(builder: (context) => MainScreen())
+                MaterialPageRoute(builder: (context) =>  const MainScreen())
               );
             }
           },

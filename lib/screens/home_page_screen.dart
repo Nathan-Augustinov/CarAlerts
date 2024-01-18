@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './signInScreen.dart';
+import 'sign_in_screen.dart';
 import '../services/authentication.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -22,10 +22,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _signOut(BuildContext context) async {
     await AuthenticationService().signOutFromGoogle();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => SignInScreen()),
-    );
+    if(context.mounted){
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SignInScreen()),
+      );
+    }
+    
   }
 
   @override

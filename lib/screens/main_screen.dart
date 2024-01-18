@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import './homePageScreen.dart';
+import 'home_page_screen.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
-  _MainScreenState createState() => _MainScreenState();
+  State<MainScreen> createState() => _MainScreenState();
 
 }
 
