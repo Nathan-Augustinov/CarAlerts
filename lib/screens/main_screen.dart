@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_page_screen.dart';
+import 'cars_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,7 +16,7 @@ class _MainScreenState extends State<MainScreen>{
 
   static const List<Widget> _tabOptions = <Widget>[
     MyHomePage(),
-    MyHomePage(),
+    CarsScreen(),
     MyHomePage(),
   ];
 
