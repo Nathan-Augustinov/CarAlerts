@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AddNewCarScreen extends StatefulWidget {
   const AddNewCarScreen({super.key});
@@ -17,23 +21,30 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
   bool isHungarianVignetteSelected = false;
   bool isAustrianVignetteSelected = false;
 
-  DateTime? insuranceBegginingDate;
-  DateTime? inspectionBegginingDate;
-  DateTime? romanianVignetteBegginingDate;
-  DateTime? hungarianVignetteBegginingDate;
-  DateTime? austrainVignetteBegginingDate;
-
   DateTime? insuranceExpiringDate;
   DateTime? inspectionExpiringDate;
   DateTime? romanianVignetteExpiringDate;
   DateTime? hungarianVignetteExpiringDate;
-  DateTime? austrainVignetteExpiringDate;
+  DateTime? austrianVignetteExpiringDate;
+
+  final String errorText = "Error";
+  final String successText = "Success";
+  final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Add new car"),
+        actions: <Widget>[
+          IconButton(
+            onPressed: (){
+              Navigator.pop(context);
+            }, 
+            icon: const Icon(Icons.close),
+            tooltip: "Exit",
+          )
+        ],
       ),
        body: Form(
         key: _formKey,
@@ -51,7 +62,7 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
                 setState(() => isInsuranceSelected = value!);
               },
             ),
-            if (isInsuranceSelected) _buildDateSelector('Select car insurance expiring date'),
+            if (isInsuranceSelected) _buildDateSelector('Select car insurance expiring date', insuranceExpiringDate, (pickedDate) => setState(() => insuranceExpiringDate = pickedDate)),
             CheckboxListTile(
               title: const Text('Car Inspection'),
               value: isInspectionSelected,
@@ -59,7 +70,7 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
                 setState(() => isInspectionSelected = value!);
               },
             ),
-            if (isInspectionSelected) _buildDateSelector('Select car inspection expiring date'),
+            if (isInspectionSelected) _buildDateSelector('Select car inspection expiring date', inspectionExpiringDate, (pickedDate) => setState(() => inspectionExpiringDate = pickedDate)),
             CheckboxListTile(
               title: const Text('Romanian Vignette'),
               value: isRomanianVignetteSelected,
@@ -67,7 +78,7 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
                 setState(() => isRomanianVignetteSelected = value!);
               },
             ),
-            if (isRomanianVignetteSelected) _buildDateSelector('Select romanian vignette expiring date'),
+            if (isRomanianVignetteSelected) _buildDateSelector('Select romanian vignette expiring date', romanianVignetteExpiringDate, (pickedDate) => setState(() => romanianVignetteExpiringDate = pickedDate)),
             CheckboxListTile(
               title: const Text('Hungarian Vignette'),
               value: isHungarianVignetteSelected,
@@ -75,7 +86,7 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
                 setState(() => isHungarianVignetteSelected = value!);
               },
             ),
-            if (isHungarianVignetteSelected) _buildDateSelector('Select hungarian vignette expiring date'),
+            if (isHungarianVignetteSelected) _buildDateSelector('Select hungarian vignette expiring date', hungarianVignetteExpiringDate, (pickedDate) => setState(() => hungarianVignetteExpiringDate = pickedDate)),
             CheckboxListTile(
               title: const Text('Austrian Vignette'),
               value: isAustrianVignetteSelected,
@@ -83,11 +94,12 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
                 setState(() => isAustrianVignetteSelected = value!);
               },
             ),
-            if (isAustrianVignetteSelected) _buildDateSelector('Select austrian vignette expiring date'),
+            if (isAustrianVignetteSelected) _buildDateSelector('Select austrian vignette expiring date', austrianVignetteExpiringDate, (pickedDate) => setState(() => austrianVignetteExpiringDate = pickedDate)),
             ElevatedButton(
               child: const Text('Save Car'),
               onPressed: () {
                 // Implement save logic
+                _saveCar();
               },
             ),
           ],
@@ -96,10 +108,10 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
     );
   }
 
-  Widget _buildDateSelector(String label) {
+  Widget _buildDateSelector(String label, DateTime? itemExpiringDate, Function(DateTime) onDateSelected) {
     return ListTile(
       title: Text(label),
-      subtitle: Text(insuranceExpiringDate?.toString() ?? 'No date chosen'),
+      subtitle: Text(itemExpiringDate?.toString() ?? 'No date chosen'),
       onTap: () async {
         DateTime? picked = await showDatePicker(
           context: context,
@@ -107,8 +119,79 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
           firstDate: DateTime(2021),
           lastDate: DateTime(2030),
         );
-        if (picked != null) setState(() => insuranceExpiringDate = picked);
+        if (picked != null) onDateSelected(picked);
+        print(itemExpiringDate);
       },
+    );
+  }
+
+  void _saveCar() {
+    if(_formKey.currentState!.validate()){
+      _formKey.currentState!.save();
+
+      if(carName.isEmpty){
+        _showErrorPopUp("Please enter the car name!", errorText);
+        return;
+      }
+      if(isInsuranceSelected && insuranceExpiringDate == null){
+        _showErrorPopUp("Please select the insurance expiration date!", errorText);
+        return;
+      }
+      if(isInspectionSelected && inspectionExpiringDate == null){
+        _showErrorPopUp("Please select the inspection expiration date!", errorText);
+        return;
+      }
+      if(isRomanianVignetteSelected && romanianVignetteExpiringDate == null){
+        _showErrorPopUp("Please select the romanian vignette expiration date!", errorText);
+        return;
+      }
+      if(isHungarianVignetteSelected && hungarianVignetteExpiringDate == null){
+        _showErrorPopUp("Please select the hungarian vignette expiration date!", errorText);
+        return;
+      }
+      if(isAustrianVignetteSelected && austrianVignetteExpiringDate == null){
+        _showErrorPopUp("Please select the austrian vignette expiration date!", errorText);
+        return;
+      }
+      _addCarToDatabase();
+    }
+  }
+
+  void _addCarToDatabase(){
+    Map<String, dynamic> carData = {
+      'car_name' : carName,
+      'insurance_date' : isInsuranceSelected ? insuranceExpiringDate?.toIso8601String() : null,
+      'inspection_date' : isInspectionSelected ? inspectionExpiringDate?.toIso8601String() : null,
+      'romanian_vignette_date' : isRomanianVignetteSelected ? romanianVignetteExpiringDate?.toIso8601String() : null,
+      'hungarian_vignette_date' : isHungarianVignetteSelected ? hungarianVignetteExpiringDate?.toIso8601String() : null,
+      'austrian_vignette_date' : isAustrianVignetteSelected ? austrianVignetteExpiringDate?.toIso8601String() : null,
+    };
+
+    DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref("cars/${FirebaseAuth.instance.currentUser!.uid}");
+    String newCarId = databaseReference.push().key!;
+    databaseReference.child(newCarId).set(carData).then((_){
+       _showErrorPopUp("Car successfully added!", successText);
+    }).catchError((error){
+       _showErrorPopUp("Error at adding the car into the database!", errorText);
+    });
+  }
+
+  void _showErrorPopUp(String errorMessage, String titleMesssage){
+    showDialog(
+      context: context, 
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text(titleMesssage),
+          content: Text(errorMessage),
+          actions: <Widget>[
+            TextButton(
+              onPressed: (){
+                Navigator.of(context).pop();
+              }, 
+              child: const Text('OK'))
+          ],
+        );
+      }
     );
   }
 

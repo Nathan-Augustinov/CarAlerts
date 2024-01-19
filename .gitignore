@@ -45,3 +45,8 @@ app.*.map.json
 # Firebase project sensitive information
 /android/app/google-services.json
 /ios/Runner/GoogleService-Info.plist
+
+.env
+/linux/
+/macos/
+/windows/

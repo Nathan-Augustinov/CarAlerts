@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1004713708148",
+    "firebase_url": "https://caralerts-b4390-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "caralerts-b4390",
     "storage_bucket": "caralerts-b4390.appspot.com"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.car_alerts"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1004713708148-8u3sff7aj5njshj8vb5nm6bp7chr0la0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.car_alerts",
+            "certificate_hash": "ede272b20187f0a90cf487eae2434793f5a02221"
+          }
+        },
+        {
+          "client_id": "1004713708148-2goa3ms3h663e30328nhdbksv8hah7tl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBU30IlODSYCZ2uxZjCqovLTZv9oY9hi-M"
@@ -20,7 +34,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1004713708148-2goa3ms3h663e30328nhdbksv8hah7tl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1004713708148-9gcc0gmkajg74en3me2e21h2mkj82233.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.carAlerts.RunnerTests"
+              }
+            }
+          ]
         }
       }
     }

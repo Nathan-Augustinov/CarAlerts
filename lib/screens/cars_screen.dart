@@ -42,7 +42,7 @@ class _CarsScreenState extends State<CarsScreen>{
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: (){
-          Navigator.pushReplacement(
+          Navigator.push(
             context, 
             MaterialPageRoute(builder: (context) =>  const AddNewCarScreen())
           );
