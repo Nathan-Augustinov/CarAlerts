@@ -1,16 +1,17 @@
+import 'package:car_alerts/main.dart';
 import 'package:flutter/material.dart';
 import 'home_page_screen.dart';
 import 'cars_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  MainScreen() : super(key: mainScreenKey);
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<MainScreen> createState() => MainScreenState();
 
 }
 
-class _MainScreenState extends State<MainScreen>{
+class MainScreenState extends State<MainScreen>{
 
   int _selectedIndex = 0;
 
@@ -21,6 +22,12 @@ class _MainScreenState extends State<MainScreen>{
   ];
 
   void _onItemTapped(int index){
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  void selectTab(int index) {
     setState(() {
       _selectedIndex = index;
     });

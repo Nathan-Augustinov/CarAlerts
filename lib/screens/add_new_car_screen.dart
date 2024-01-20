@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:car_alerts/main.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -29,7 +32,9 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
 
   final String errorText = "Error";
   final String successText = "Success";
-  final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
+  static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
+  final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref();
+  final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   Widget build(BuildContext context) {
@@ -120,12 +125,11 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
           lastDate: DateTime(2030),
         );
         if (picked != null) onDateSelected(picked);
-        print(itemExpiringDate);
       },
     );
   }
 
-  void _saveCar() {
+  Future<void> _saveCar() async {
     if(_formKey.currentState!.validate()){
       _formKey.currentState!.save();
 
@@ -133,6 +137,13 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
         _showErrorPopUp("Please enter the car name!", errorText);
         return;
       }
+
+      bool nameUsed = await _carNameAlreadyUsed(carName);
+      if(nameUsed){
+        _showErrorPopUp("You already have a car with this name saved!", errorText);
+        return; 
+      }
+
       if(isInsuranceSelected && insuranceExpiringDate == null){
         _showErrorPopUp("Please select the insurance expiration date!", errorText);
         return;
@@ -167,9 +178,8 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
       'austrian_vignette_date' : isAustrianVignetteSelected ? austrianVignetteExpiringDate?.toIso8601String() : null,
     };
 
-    DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref("cars/${FirebaseAuth.instance.currentUser!.uid}");
-    String newCarId = databaseReference.push().key!;
-    databaseReference.child(newCarId).set(carData).then((_){
+    String newCarId = databaseReference.child('cars/${FirebaseAuth.instance.currentUser!.uid}').push().key!;
+    databaseReference.child('cars/$currentUserId/$newCarId').set(carData).then((_){
        _showErrorPopUp("Car successfully added!", successText);
     }).catchError((error){
        _showErrorPopUp("Error at adding the car into the database!", errorText);
@@ -187,12 +197,33 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
             TextButton(
               onPressed: (){
                 Navigator.of(context).pop();
+                if(titleMesssage == successText){
+                  Navigator.of(context).pop();
+                  mainScreenKey.currentState?.selectTab(1);
+                }
               }, 
               child: const Text('OK'))
           ],
         );
       }
     );
+  }
+
+  Future<bool> _carNameAlreadyUsed(String carName) async {
+    bool result = false;
+    try{
+      DatabaseEvent event = await databaseReference.child('cars/$currentUserId')
+          .orderByChild('car_name')
+          .equalTo(carName)
+          .once(); 
+
+      if(event.snapshot.exists){
+        result = true;
+      }
+    } catch(error){
+        print("Error in querying the database: $error");
+    }
+      return result;
   }
 
 }

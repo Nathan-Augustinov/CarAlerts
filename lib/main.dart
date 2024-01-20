@@ -6,6 +6,7 @@ import 'screens/sign_in_screen.dart';
 import 'screens/main_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+GlobalKey<MainScreenState> mainScreenKey = GlobalKey();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
           } else if (snapshot.hasData) {
-            return const MainScreen(); // User is signed in
+            return MainScreen(); // User is signed in
           } else {
             return SignInScreen(); // User is not signed in
           }

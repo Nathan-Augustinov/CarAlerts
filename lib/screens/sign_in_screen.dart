@@ -19,7 +19,7 @@ class SignInScreen extends StatelessWidget {
               // Navigate to Home Screen
               Navigator.pushReplacement(
                 context, 
-                MaterialPageRoute(builder: (context) =>  const MainScreen())
+                MaterialPageRoute(builder: (context) =>  MainScreen())
               );
             }
           },
