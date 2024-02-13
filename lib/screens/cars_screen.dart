@@ -45,15 +45,6 @@ class _CarsScreenState extends State<CarsScreen>{
     });
   }
 
-  String extractDate(String firebaseItemDateTime){
-    try{
-      return firebaseItemDateTime.split('T')[0];
-    }
-    catch (error){
-      return "Invalid Date";
-    }
-  }
-
   String mapDatabaseKeyToDisplayName(String databaseKey){
     final displayName = databaseKey.replaceAll('_date', '').replaceAll('_', ' ');
     return displayName[0].toUpperCase() + displayName.substring(1);
@@ -75,7 +66,7 @@ class _CarsScreenState extends State<CarsScreen>{
                 children: cars[index].items.entries.map((item){
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Text('${mapDatabaseKeyToDisplayName(item.key)} :   ${extractDate(item.value)}'),
+                    child: Text('${mapDatabaseKeyToDisplayName(item.key)} :   ${Car.extractDate(item.value)}'),
                   );
                 }).toList(),
               ),
