@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/car.dart';
 import 'sign_in_screen.dart';
 import '../services/authentication.dart';
@@ -16,10 +13,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
-  // final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(
-  //         app: Firebase.app(), databaseURL: databaseURL)
-  //     .ref();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   bool isLoading = true;
   List<Car> myCarList = [];

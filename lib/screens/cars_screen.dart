@@ -2,10 +2,7 @@ import 'package:car_alerts/screens/add_new_car_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/car.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class CarsScreen extends StatefulWidget {
   const CarsScreen({super.key});
@@ -18,8 +15,6 @@ class CarsScreen extends StatefulWidget {
 class _CarsScreenState extends State<CarsScreen>{
   List<Car> cars = [];
   bool isLoading = true;
-  // static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
-  // final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override

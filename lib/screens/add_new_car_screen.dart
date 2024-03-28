@@ -2,10 +2,8 @@ import 'dart:async';
 import 'package:car_alerts/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 class AddNewCarScreen extends StatefulWidget {
   const AddNewCarScreen({super.key});
@@ -57,7 +55,9 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
           padding: const EdgeInsets.all(16.0),
           children: <Widget>[
             TextFormField(
-              decoration: const InputDecoration(labelText: 'Car Name'),
+              decoration: InputDecoration(
+                labelText: 'Car Name - Car Identification Number', 
+                suffixIcon: IconButton(onPressed: _showInfoPopUp, icon: const Icon(Icons.info_outline),)),
               onSaved: (value) => carName = value!,
             ),
             CheckboxListTile(
@@ -140,7 +140,7 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
 
       bool nameUsed = await _carNameAlreadyUsed(carName);
       if(nameUsed){
-        _showErrorPopUp("You already have a car with this name saved!", errorText);
+        _showErrorPopUp("You already have a car with this name or identification number saved!", errorText);
         return; 
       }
 
@@ -208,16 +208,31 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
     );
   }
 
+  void _showInfoPopUp(){
+    showDialog(
+      context: context, 
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: const Text("Car Name - Car Identification Number"),
+          content: const Text("Please enter the car name and the car identification number. You can either use the car name, the car identification number or both to identify the car.\nIf you use only the car name, please use the following format: Golf or, if the car name has more than one word, GolfGTI.\nIf you use only the car identification number, please save it in the following format: AR00XYZ.\nIn case you use both, please save them in the following format: Golf - AR00XYZ, or if the car name has more than one word: GolfGTI - AR00XYZ."),
+          actions: <Widget>[
+            TextButton(
+              onPressed: (){
+                Navigator.of(context).pop();
+              }, 
+              child: const Text('OK'))
+          ],
+        );
+      }
+    );
+  }
+
   Future<bool> _carNameAlreadyUsed(String carName) async {
     bool result = false;
     try{
-      // DatabaseEvent event = await databaseReference.child('cars/$currentUserId')
-      //     .orderByChild('car_name')
-      //     .equalTo(carName)
-      //     .once(); 
-
       await FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(carName).get().then((value) {
-        if(value.exists){
+        getCarIdFromName(carName);
+        if(value.exists || getCarIdFromName(carName) == getCarIdFromName(value.id)){
           result = true;
         }
       });
@@ -226,9 +241,13 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
       //   result = true;
       // }
     } catch(error){
-        print("Error in querying the database: $error");
+      _showErrorPopUp("Error in querying the database: $error", errorText);
     }
       return result;
+  }
+
+  String getCarIdFromName(String carName){
+    return carName.split(" ").elementAt(2);
   }
 
 }
