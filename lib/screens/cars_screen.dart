@@ -1,4 +1,5 @@
 import 'package:car_alerts/screens/add_new_car_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/car.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -17,8 +18,8 @@ class CarsScreen extends StatefulWidget {
 class _CarsScreenState extends State<CarsScreen>{
   List<Car> cars = [];
   bool isLoading = true;
-  static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
-  final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref();
+  // static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
+  // final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
@@ -28,22 +29,13 @@ class _CarsScreenState extends State<CarsScreen>{
   }
 
   void _fetchCars() async {
-    DatabaseEvent event = await databaseReference.child('cars/$currentUserId').once();
-    List<Car> fetchedCars = [];
-    if(event.snapshot.exists && event.snapshot.value is Map){
-      Map<dynamic, dynamic> carsData = event.snapshot.value as Map<dynamic, dynamic>;
-      carsData.forEach((key, value) {
-        if (value is Map<dynamic, dynamic>) {
-          Map<String, dynamic> carMap = Map.from(value);
-          fetchedCars.add(Car.fromMap(carMap));
-        }
-      });
-    }
+    QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').get();
+    List<Car> fetchedCars = querySnapshot.docs.map((doc) => Car.fromMap(doc.data(), doc.id)).toList();
     setState(() {
       cars = fetchedCars;
       isLoading = false;
     });
-  }
+  } 
 
   String mapDatabaseKeyToDisplayName(String databaseKey){
     final displayName = databaseKey.replaceAll('_date', '').replaceAll('_', ' ');

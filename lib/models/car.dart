@@ -6,14 +6,18 @@ class Car {
 
   Car({required this.name, this.items = const {}});
 
-  factory Car.fromMap(Map<String, dynamic> data) {
+  factory Car.fromMap(Map<String, dynamic> data, String carName) {
     Map<String, String> items = {};
     data.forEach((key, value) {
-      if (key != "car_name") {
-        items[key] = value as String;
+      // if (key != "car_name") {
+      //   items[key] = value as String;
+      // }
+      if (value is String) {
+        items[key] = value ;
       }
     });
-    return Car(name: data['car_name'] as String, items: items);
+    // return Car(name: data['car_name'] as String, items: items);
+    return Car(name: carName, items: items);
   }
 
   List<MapEntry<String, int>> getUrgentItems() {
@@ -33,7 +37,7 @@ class Car {
       return dateFormat.format(DateTime.parse(firebaseItemDateTime.split('T')[0]));
     }
     catch (error){
-      return "Invalid Date";
+      return "Invalid Date"; 
     }
   }
 

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -10,24 +11,15 @@ import '../services/authentication.dart';
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
-  final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(
-          app: Firebase.app(), databaseURL: databaseURL)
-      .ref();
+  // static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
+  // final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(
+  //         app: Firebase.app(), databaseURL: databaseURL)
+  //     .ref();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   bool isLoading = true;
   List<Car> myCarList = [];
@@ -50,23 +42,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _fetchCars() async {
-    DatabaseEvent event =
-        await databaseReference.child('cars/$currentUserId').once();
-    List<Car> fetchedCars = [];
-    if (event.snapshot.exists && event.snapshot.value is Map) {
-      Map<dynamic, dynamic> carsData =
-          event.snapshot.value as Map<dynamic, dynamic>;
-      carsData.forEach((key, value) {
-        if (value is Map<dynamic, dynamic>) {
-          Map<String, dynamic> carMap = Map.from(value);
-          fetchedCars.add(Car.fromMap(carMap));
-        }
-      });
-    }
+    QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore.instance
+        .collection('cars')
+        .doc(currentUserId)
+        .collection('user_cars')
+        .get();
+    List<Car> fetchedCars = querySnapshot.docs.map((doc) => Car.fromMap(doc.data(), doc.id)).toList();
     setState(() {
       myCarList = fetchedCars;
-      urgentItems = myCarList.expand((car) => car.getUrgentItems()).toList()
-        ..sort((a, b) => a.value.compareTo(b.value));
+      urgentItems = myCarList.expand((car) => car.getUrgentItems()).toList()..sort((a, b) => a.value.compareTo(b.value));
       isLoading = false;
     });
   }

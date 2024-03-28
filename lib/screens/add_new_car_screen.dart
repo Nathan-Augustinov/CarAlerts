@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:car_alerts/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -32,8 +32,8 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
 
   final String errorText = "Error";
   final String successText = "Success";
-  static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
-  final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref();
+  // static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
+  // final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
@@ -169,8 +169,8 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
   }
 
   void _addCarToDatabase(){
+
     Map<String, dynamic> carData = {
-      'car_name' : carName,
       'insurance_date' : isInsuranceSelected ? insuranceExpiringDate?.toIso8601String() : null,
       'inspection_date' : isInspectionSelected ? inspectionExpiringDate?.toIso8601String() : null,
       'romanian_vignette_date' : isRomanianVignetteSelected ? romanianVignetteExpiringDate?.toIso8601String() : null,
@@ -178,8 +178,7 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
       'austrian_vignette_date' : isAustrianVignetteSelected ? austrianVignetteExpiringDate?.toIso8601String() : null,
     };
 
-    String newCarId = databaseReference.child('cars/${FirebaseAuth.instance.currentUser!.uid}').push().key!;
-    databaseReference.child('cars/$currentUserId/$newCarId').set(carData).then((_){
+    FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(carName).set(carData).then((_){
        _showErrorPopUp("Car successfully added!", successText);
     }).catchError((error){
        _showErrorPopUp("Error at adding the car into the database!", errorText);
@@ -212,14 +211,20 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
   Future<bool> _carNameAlreadyUsed(String carName) async {
     bool result = false;
     try{
-      DatabaseEvent event = await databaseReference.child('cars/$currentUserId')
-          .orderByChild('car_name')
-          .equalTo(carName)
-          .once(); 
+      // DatabaseEvent event = await databaseReference.child('cars/$currentUserId')
+      //     .orderByChild('car_name')
+      //     .equalTo(carName)
+      //     .once(); 
 
-      if(event.snapshot.exists){
-        result = true;
-      }
+      await FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(carName).get().then((value) {
+        if(value.exists){
+          result = true;
+        }
+      });
+
+      // if(event.snapshot.exists){
+      //   result = true;
+      // }
     } catch(error){
         print("Error in querying the database: $error");
     }
