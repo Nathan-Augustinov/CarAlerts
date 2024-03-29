@@ -1,4 +1,5 @@
 import 'package:car_alerts/main.dart';
+import 'package:car_alerts/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'home_page_screen.dart';
 import 'cars_screen.dart';
@@ -15,10 +16,10 @@ class MainScreenState extends State<MainScreen>{
 
   int _selectedIndex = 0;
 
-  static const List<Widget> _tabOptions = <Widget>[
-    MyHomePage(),
-    CarsScreen(),
-    MyHomePage(),
+  static final List<Widget> _tabOptions = <Widget>[
+    const MyHomePage(),
+    const CarsScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index){
@@ -51,7 +52,7 @@ class MainScreenState extends State<MainScreen>{
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Settings',
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,
