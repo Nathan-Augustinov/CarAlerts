@@ -12,21 +12,6 @@ class SignInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // body: Center(
-      //   child: ElevatedButton(
-      //     onPressed: () async {
-      //       User? user = await _authService.signInWithGoogle();
-      //       if (user != null && context.mounted) {
-      //         // Navigate to Home Screen
-      //         Navigator.pushReplacement(
-      //           context,
-      //           MaterialPageRoute(builder: (context) =>  MainScreen())
-      //         );
-      //       }
-      //     },
-      //     child: const Text('Sign in with Google'),
-      //   ),
-      // ),
       body: Center(
         child: SizedBox(
           height: MediaQuery.of(context).size.height * 0.07,

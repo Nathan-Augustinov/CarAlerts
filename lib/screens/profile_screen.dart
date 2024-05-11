@@ -34,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               enabled: false,
             ),
           ),
+          const SizedBox(height: 24,),
           SwitchListTile(
             title: const Text('Dark Theme'),
             value: darkModeEnabled,
@@ -41,12 +42,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onChanged: (value) {
               setState(() {
                 if (value) {
-                  // Enable dark theme
-                  // You can use a theme provider or set the theme manually
-                  // Example: Provider.of<ThemeProvider>(context, listen: false).setTheme(darkTheme);
+                  //TODO: Enable dark theme
                 } else {
-                  // Enable light theme
-                  // Example: Provider.of<ThemeProvider>(context, listen: false).setTheme(lightTheme);
+                  //TODO: Disable dark theme
                 }
               });
             },
@@ -58,8 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             activeColor: AppColors.firstColor,
             onChanged: (value) {
               setState(() {
-                // Update the value for notifications
-                // Example: Provider.of<NotificationProvider>(context, listen: false).setNotifications(value);
+                //TODO: Enable or disable notifications
               });
             },
           ),
@@ -71,8 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 textAlign: TextAlign.center,
               ),
               onPressed: () {
-                // Open a dialog to suggest an improvement
-                // Example: showDialog(context: context, builder: (context) => SuggestImprovementDialog());
+                //TODO: Implement feedback form
               }),
           TextButton(
             child: Text(

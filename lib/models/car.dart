@@ -9,14 +9,10 @@ class Car {
   factory Car.fromMap(Map<String, dynamic> data, String carName) {
     Map<String, String> items = {};
     data.forEach((key, value) {
-      // if (key != "car_name") {
-      //   items[key] = value as String;
-      // }
       if (value is String) {
         items[key] = value ;
       }
     });
-    // return Car(name: data['car_name'] as String, items: items);
     return Car(name: carName, items: items);
   }
 

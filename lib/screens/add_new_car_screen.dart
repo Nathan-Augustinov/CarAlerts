@@ -30,8 +30,6 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
 
   final String errorText = "Error";
   final String successText = "Success";
-  // static final String? databaseURL = dotenv.env['FIREBASE_DATABASE_URL'];
-  // final DatabaseReference databaseReference = FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: databaseURL).ref();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
@@ -236,10 +234,6 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
           result = true;
         }
       });
-
-      // if(event.snapshot.exists){
-      //   result = true;
-      // }
     } catch(error){
       _showErrorPopUp("Error in querying the database: $error", errorText);
     }

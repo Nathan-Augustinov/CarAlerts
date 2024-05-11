@@ -111,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage>
           return ListTile(
             title: Text(item.key, style: TextStyle(color: textColor)),
             subtitle: Text(
-                "$category ${item.value > 0 ? "in" : ""} ${item.value.abs()} days ${item.value > 0 ? "" : "ago"}",),
+                "$category ${item.value > 0 ? "in " : ""}${item.value.abs()} days ${item.value > 0 ? "" : "ago"}",),
           );
         });
   }
