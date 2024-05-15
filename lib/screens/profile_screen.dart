@@ -1,6 +1,7 @@
 import 'package:car_alerts/constants/app_colors.dart';
 import 'package:car_alerts/screens/sign_in_screen.dart';
-import 'package:car_alerts/services/authentication.dart';
+import 'package:car_alerts/services/authentication_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -12,9 +13,24 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String userEmail = FirebaseAuth.instance.currentUser!.email!;
+  final String userEmail = FirebaseAuth.instance.currentUser!.email!;
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
   bool darkModeEnabled = false;
   bool notificationsEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getUserSettings();
+  }
+
+  void getUserSettings() async {
+    final userSettingsDoc = await FirebaseFirestore.instance.collection('users').doc(userId).collection('settings').doc('user_settings').get();
+    darkModeEnabled = userSettingsDoc['darkMode'] ?? false;
+    notificationsEnabled = userSettingsDoc['notifications'] ?? false;
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {

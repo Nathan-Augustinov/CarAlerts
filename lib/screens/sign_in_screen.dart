@@ -1,11 +1,13 @@
 import 'package:car_alerts/constants/app_colors.dart';
 import 'package:car_alerts/screens/main_screen.dart';
+import 'package:car_alerts/services/user_settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/authentication.dart';
+import '../services/authentication_service.dart';
 
 class SignInScreen extends StatelessWidget {
   final AuthenticationService _authService = AuthenticationService();
+  final UserSettingsService _userSettingsService = UserSettingsService();
 
   SignInScreen({super.key});
 
@@ -37,7 +39,7 @@ class SignInScreen extends StatelessWidget {
               onPressed: () async {
                 User? user = await _authService.signInWithGoogle();
                 if (user != null && context.mounted) {
-                  // Navigate to Home Screen
+                  await _userSettingsService.initializeUserSettings(user);
                   Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (context) => MainScreen()));
                 }

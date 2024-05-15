@@ -47,15 +47,31 @@ class _CarsScreenState extends State<CarsScreen>{
         ListView.builder(
           itemCount: cars.length,
           itemBuilder:(context, index) {
+            final car = cars[index];
             return Card(
               child: ExpansionTile(
-                title: Text(cars[index].name),
-                children: cars[index].items.entries.map((item){
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Text('${mapDatabaseKeyToDisplayName(item.key)} :   ${Car.extractDate(item.value)}'),
-                  );
-                }).toList(),
+                title: Text(car.name),
+                children: <Widget>[
+                  ...car.items.entries.map((item){
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: Text('${mapDatabaseKeyToDisplayName(item.key)} :   ${Car.extractDate(item.value)}'),
+                    );
+                  }).toList(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: (){}, 
+                        icon: const Icon(Icons.edit, color: Colors.blue)
+                      ),
+                      IconButton(
+                        onPressed: (){}, 
+                        icon: const Icon(Icons.delete, color: Colors.red,)
+                      )
+                    ],
+                  )
+                ],
               ),
             );
           },
