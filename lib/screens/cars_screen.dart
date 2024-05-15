@@ -1,4 +1,4 @@
-import 'package:car_alerts/screens/add_new_car_screen.dart';
+import 'package:car_alerts/screens/add_or_edit_car_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/car.dart';
@@ -62,11 +62,19 @@ class _CarsScreenState extends State<CarsScreen>{
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       IconButton(
-                        onPressed: (){}, 
+                        onPressed: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => AddOrEditCarScreen(car: car,)));
+                        }, 
                         icon: const Icon(Icons.edit, color: Colors.blue)
                       ),
                       IconButton(
-                        onPressed: (){}, 
+                        //TODO: Implement showing a dialog to confirm deletion
+                        onPressed: (){
+                          FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(car.name).delete();
+                          setState(() {
+                            cars.removeAt(index);
+                          });
+                        }, 
                         icon: const Icon(Icons.delete, color: Colors.red,)
                       )
                     ],
@@ -80,7 +88,7 @@ class _CarsScreenState extends State<CarsScreen>{
           onPressed: (){
             Navigator.push(
               context, 
-              MaterialPageRoute(builder: (context) =>  const AddNewCarScreen())
+              MaterialPageRoute(builder: (context) =>  const AddOrEditCarScreen())
             );
           },
           tooltip: "Add a new car",

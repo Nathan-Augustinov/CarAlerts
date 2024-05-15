@@ -1,20 +1,25 @@
 import 'dart:async';
 import 'package:car_alerts/main.dart';
+import 'package:car_alerts/models/car.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/widgets.dart';
 
 
-class AddNewCarScreen extends StatefulWidget {
-  const AddNewCarScreen({super.key});
+class AddOrEditCarScreen extends StatefulWidget {
+  final Car? car;
+  
+  const AddOrEditCarScreen({super.key, this.car});
 
 
   @override
-  State<AddNewCarScreen> createState() => _AddNewCarScreenState();
+  State<AddOrEditCarScreen> createState() => _AddOrEditCarScreenState();
 }
 
-class _AddNewCarScreenState extends State<AddNewCarScreen>{
+class _AddOrEditCarScreenState extends State<AddOrEditCarScreen>{
   final _formKey = GlobalKey<FormState>();
+  TextEditingController _carNameController = TextEditingController();
   String carName = '';
   bool isInsuranceSelected = false;
   bool isInspectionSelected = false;
@@ -33,10 +38,35 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
+  void initState() {
+    super.initState();
+    if(widget.car != null){
+      carName  = _carNameController.text = widget.car!.name;
+      isInsuranceSelected = widget.car!.items['insurance_date'] != null;
+      isInspectionSelected = widget.car!.items['inspection_date'] != null;
+      isRomanianVignetteSelected = widget.car!.items['romanian_vignette_date'] != null;
+      isHungarianVignetteSelected = widget.car!.items['hungarian_vignette_date'] != null;
+      isAustrianVignetteSelected = widget.car!.items['austrian_vignette_date'] != null;
+
+      insuranceExpiringDate = widget.car!.items['insurance_date'] != null ? DateTime.parse(widget.car!.items['insurance_date']!) : null;
+      inspectionExpiringDate = widget.car!.items['inspection_date'] != null ? DateTime.parse(widget.car!.items['inspection_date']!) : null;
+      romanianVignetteExpiringDate = widget.car!.items['romanian_vignette_date'] != null ? DateTime.parse(widget.car!.items['romanian_vignette_date']!) : null;
+      hungarianVignetteExpiringDate = widget.car!.items['hungarian_vignette_date'] != null ? DateTime.parse(widget.car!.items['hungarian_vignette_date']!) : null;
+      austrianVignetteExpiringDate = widget.car!.items['austrian_vignette_date'] != null ? DateTime.parse(widget.car!.items['austrian_vignette_date']!) : null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _carNameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add new car"),
+        title: widget.car != null ? const Text("Edit car") : const Text("Add new car"),
         actions: <Widget>[
           IconButton(
             onPressed: (){
@@ -53,6 +83,7 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
           padding: const EdgeInsets.all(16.0),
           children: <Widget>[
             TextFormField(
+              controller: _carNameController,
               decoration: InputDecoration(
                 labelText: 'Car Name - Car Identification Number', 
                 suffixIcon: IconButton(onPressed: _showInfoPopUp, icon: const Icon(Icons.info_outline),)),
@@ -136,11 +167,14 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
         return;
       }
 
-      bool nameUsed = await _carNameAlreadyUsed(carName);
-      if(nameUsed){
-        _showErrorPopUp("You already have a car with this name or identification number saved!", errorText);
-        return; 
+      if(widget.car == null){
+        bool nameUsed = await _carNameAlreadyUsed(carName);
+        if(nameUsed){
+          _showErrorPopUp("You already have a car with this name or identification number saved!", errorText);
+          return; 
+        }
       }
+      
 
       if(isInsuranceSelected && insuranceExpiringDate == null){
         _showErrorPopUp("Please select the insurance expiration date!", errorText);
@@ -177,7 +211,7 @@ class _AddNewCarScreenState extends State<AddNewCarScreen>{
     };
 
     FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(carName).set(carData).then((_){
-       _showErrorPopUp("Car successfully added!", successText);
+       _showErrorPopUp(widget.car == null ? "Car successfully added!" : "Car successfully edited!", successText);
     }).catchError((error){
        _showErrorPopUp("Error at adding the car into the database!", errorText);
     });
