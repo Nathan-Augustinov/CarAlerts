@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:car_alerts/main.dart';
 import 'package:car_alerts/models/car.dart';
+import 'package:car_alerts/services/notifications_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,7 +20,8 @@ class AddOrEditCarScreen extends StatefulWidget {
 
 class _AddOrEditCarScreenState extends State<AddOrEditCarScreen>{
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _carNameController = TextEditingController();
+  final TextEditingController _carNameController = TextEditingController();
+  final NotificationsService _notificationService = NotificationsService();
   String carName = '';
   bool isInsuranceSelected = false;
   bool isInspectionSelected = false;
@@ -40,19 +42,9 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen>{
   @override
   void initState() {
     super.initState();
+    _notificationService.localNotificationsInitialization();
     if(widget.car != null){
-      carName  = _carNameController.text = widget.car!.name;
-      isInsuranceSelected = widget.car!.items['insurance_date'] != null;
-      isInspectionSelected = widget.car!.items['inspection_date'] != null;
-      isRomanianVignetteSelected = widget.car!.items['romanian_vignette_date'] != null;
-      isHungarianVignetteSelected = widget.car!.items['hungarian_vignette_date'] != null;
-      isAustrianVignetteSelected = widget.car!.items['austrian_vignette_date'] != null;
-
-      insuranceExpiringDate = widget.car!.items['insurance_date'] != null ? DateTime.parse(widget.car!.items['insurance_date']!) : null;
-      inspectionExpiringDate = widget.car!.items['inspection_date'] != null ? DateTime.parse(widget.car!.items['inspection_date']!) : null;
-      romanianVignetteExpiringDate = widget.car!.items['romanian_vignette_date'] != null ? DateTime.parse(widget.car!.items['romanian_vignette_date']!) : null;
-      hungarianVignetteExpiringDate = widget.car!.items['hungarian_vignette_date'] != null ? DateTime.parse(widget.car!.items['hungarian_vignette_date']!) : null;
-      austrianVignetteExpiringDate = widget.car!.items['austrian_vignette_date'] != null ? DateTime.parse(widget.car!.items['austrian_vignette_date']!) : null;
+     _loadCarDetails();
     }
   }
 
@@ -85,7 +77,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen>{
             TextFormField(
               controller: _carNameController,
               decoration: InputDecoration(
-                labelText: 'Car Name - Car Identification Number', 
+                labelText: 'Car Identification Number', 
                 suffixIcon: IconButton(onPressed: _showInfoPopUp, icon: const Icon(Icons.info_outline),)),
               onSaved: (value) => carName = value!,
             ),
@@ -196,6 +188,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen>{
         _showErrorPopUp("Please select the austrian vignette expiration date!", errorText);
         return;
       }
+      _scheduleNotificationsForItems();
       _addCarToDatabase();
     }
   }
@@ -245,8 +238,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen>{
       context: context, 
       builder: (BuildContext context){
         return AlertDialog(
-          title: const Text("Car Name - Car Identification Number"),
-          content: const Text("Please enter the car name and the car identification number. You can either use the car name, the car identification number or both to identify the car.\nIf you use only the car name, please use the following format: Golf or, if the car name has more than one word, GolfGTI.\nIf you use only the car identification number, please save it in the following format: AR00XYZ.\nIn case you use both, please save them in the following format: Golf - AR00XYZ, or if the car name has more than one word: GolfGTI - AR00XYZ."),
+          title: const Text("Car Identification Number", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          content: const Text("Please enter the car identification number. Please use the following format when saving the car: AR00XYZ!", style: TextStyle(fontStyle: FontStyle.italic),),
           actions: <Widget>[
             TextButton(
               onPressed: (){
@@ -261,21 +254,50 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen>{
 
   Future<bool> _carNameAlreadyUsed(String carName) async {
     bool result = false;
+    print(carName);
     try{
-      await FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(carName).get().then((value) {
-        getCarIdFromName(carName);
-        if(value.exists || getCarIdFromName(carName) == getCarIdFromName(value.id)){
-          result = true;
-        }
-      });
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(carName).get();
+      if(snapshot.exists){
+        print(snapshot.data());
+        result = true;
+      }
     } catch(error){
       _showErrorPopUp("Error in querying the database: $error", errorText);
     }
       return result;
   }
 
-  String getCarIdFromName(String carName){
-    return carName.split(" ").elementAt(2);
+  void _loadCarDetails(){
+    carName  = _carNameController.text = widget.car!.name;
+    isInsuranceSelected = widget.car!.items['insurance_date'] != null;
+    isInspectionSelected = widget.car!.items['inspection_date'] != null;
+    isRomanianVignetteSelected = widget.car!.items['romanian_vignette_date'] != null;
+    isHungarianVignetteSelected = widget.car!.items['hungarian_vignette_date'] != null;
+    isAustrianVignetteSelected = widget.car!.items['austrian_vignette_date'] != null;
+
+    insuranceExpiringDate = widget.car!.items['insurance_date'] != null ? DateTime.parse(widget.car!.items['insurance_date']!) : null;
+    inspectionExpiringDate = widget.car!.items['inspection_date'] != null ? DateTime.parse(widget.car!.items['inspection_date']!) : null;
+    romanianVignetteExpiringDate = widget.car!.items['romanian_vignette_date'] != null ? DateTime.parse(widget.car!.items['romanian_vignette_date']!) : null;
+    hungarianVignetteExpiringDate = widget.car!.items['hungarian_vignette_date'] != null ? DateTime.parse(widget.car!.items['hungarian_vignette_date']!) : null;
+    austrianVignetteExpiringDate = widget.car!.items['austrian_vignette_date'] != null ? DateTime.parse(widget.car!.items['austrian_vignette_date']!) : null;
+  }
+  
+  void _scheduleNotificationsForItems() {
+    if(isInsuranceSelected && insuranceExpiringDate != null){
+      _notificationService.scheduleNotification('insurance', insuranceExpiringDate!, '$carName Insurance Reminder');
+    }
+    if(isInspectionSelected && inspectionExpiringDate != null){
+      _notificationService.scheduleNotification('inspection', inspectionExpiringDate!, '$carName Inspection Reminder');
+    }
+    if(isRomanianVignetteSelected && romanianVignetteExpiringDate != null){
+      _notificationService.scheduleNotification('romanian_vignette', romanianVignetteExpiringDate!, '$carName Romanian Vignette Reminder');
+    }
+    if(isHungarianVignetteSelected && hungarianVignetteExpiringDate != null){
+      _notificationService.scheduleNotification('hungarian_vignette', hungarianVignetteExpiringDate!, '$carName Hungarian Vignette Reminder');
+    }
+    if(isAustrianVignetteSelected && austrianVignetteExpiringDate != null){
+      _notificationService.scheduleNotification('austrian_vignette', austrianVignetteExpiringDate!, '$carName Austrian Vignette Reminder');
+    }
   }
 
 }

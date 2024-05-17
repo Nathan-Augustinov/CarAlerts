@@ -3,8 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/car.dart';
-import 'sign_in_screen.dart';
-import '../services/authentication_service.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -28,7 +26,7 @@ class _MyHomePageState extends State<MyHomePage>
     super.initState();
     _fetchCars();
     _tabController = TabController(length: 2, vsync: this);
-    showNotificationPermissionsDialog();
+    // showNotificationPermissionsDialog();
   }
 
   @override
@@ -37,17 +35,17 @@ class _MyHomePageState extends State<MyHomePage>
     super.dispose();
   }
 
-  void showNotificationPermissionsDialog() async {
-    //TODO: Implement logic to see if the user has chosen to disable notifications
-    final userSettingsDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).collection('settings').doc('user_settings').get();
-    if(userSettingsDoc['notifications'] == false){
-      _notificationService.requestAndStoreInDatabaseNotificationPermission(FirebaseAuth.instance.currentUser!);
-    }
-  }
+  // void showNotificationPermissionsDialog() async {
+  //   //TODO: Implement logic to see if the user has chosen to disable notifications
+  //   final userSettingsDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).collection('settings').doc('user_settings').get();
+  //   if(userSettingsDoc['notifications'] == false){
+  //     _notificationService.requestAndStoreInDatabaseNotificationPermission(FirebaseAuth.instance.currentUser!);
+  //   }
+  // }
 
   void _fetchCars() async {
     setState(() {
-      isLoading = true; // Set to true when starting to fetch data
+      isLoading = true;
     });
     try {
       QuerySnapshot<Map<String, dynamic>> querySnapshot =

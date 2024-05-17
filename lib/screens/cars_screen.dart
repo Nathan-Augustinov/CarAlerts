@@ -69,8 +69,8 @@ class _CarsScreenState extends State<CarsScreen>{
                       ),
                       IconButton(
                         //TODO: Implement showing a dialog to confirm deletion
-                        onPressed: (){
-                          FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(car.name).delete();
+                        onPressed: () async{
+                          await FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(car.name).delete();
                           setState(() {
                             cars.removeAt(index);
                           });
