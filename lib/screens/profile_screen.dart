@@ -68,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SwitchListTile(
             title: const Text('Notifications'),
             value:
-                notificationsEnabled, // Replace with your logic for notifications
+                notificationsEnabled, 
             activeColor: AppColors.firstColor,
             onChanged: (value) {
               setState(() {
