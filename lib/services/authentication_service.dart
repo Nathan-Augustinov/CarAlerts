@@ -21,17 +21,37 @@ class AuthenticationService {
     }
     final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-    final credential = GoogleAuthProvider.credential(
-      idToken: googleAuth.idToken
-    );
+    final credential =
+        GoogleAuthProvider.credential(idToken: googleAuth.idToken);
 
-    UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+    UserCredential userCredential =
+        await _firebaseAuth.signInWithCredential(credential);
     return userCredential.user;
   }
 
+  Future<User?> signInWithEmail(String email, String password) async {
+    final result = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email.trim(), password: password);
+    return result.user;
+  }
+
+  Future<User?> createAccount(String email, String password) async {
+    final result = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email.trim(), password: password);
+    return result.user;
+  }
+
+  Future<void> resetPassword(String email) =>
+      _firebaseAuth.sendPasswordResetEmail(email: email.trim());
+
   Future<void> signOutFromGoogle() async {
-    await _googleInitialization;
-    await _googleSignIn.signOut();
+    final usesGoogle = _firebaseAuth.currentUser?.providerData
+            .any((provider) => provider.providerId == 'google.com') ??
+        false;
+    if (usesGoogle) {
+      await _googleInitialization;
+      await _googleSignIn.signOut();
+    }
     await _firebaseAuth.signOut();
   }
 }
