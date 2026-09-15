@@ -54,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SwitchListTile(
             title: const Text('Dark Theme'),
             value: darkModeEnabled,
-            activeColor: Theme.of(context).colorScheme.secondary,
+            activeThumbColor: Theme.of(context).colorScheme.secondary,
             onChanged: (value) {
               setState(() {
                 if (value) {
@@ -69,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: const Text('Notifications'),
             value:
                 notificationsEnabled, 
-            activeColor: AppColors.firstColor,
+            activeThumbColor: AppColors.firstColor,
             onChanged: (value) {
               setState(() {
                 //TODO: Enable or disable notifications

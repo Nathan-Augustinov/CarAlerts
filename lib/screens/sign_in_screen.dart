@@ -40,6 +40,7 @@ class SignInScreen extends StatelessWidget {
                 User? user = await _authService.signInWithGoogle();
                 if (user != null && context.mounted) {
                   await _userSettingsService.initializeUserSettings(user);
+                  if (!context.mounted) return;
                   Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (context) => MainScreen()));
                 }

@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/main_screen.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 GlobalKey<MainScreenState> mainScreenKey = GlobalKey();
 void main() async {
@@ -12,7 +11,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await dotenv.load();
   runApp(const MyApp());
 }
 

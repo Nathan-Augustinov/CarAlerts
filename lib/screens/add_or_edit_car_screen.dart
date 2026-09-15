@@ -5,7 +5,6 @@ import 'package:car_alerts/services/notifications_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/widgets.dart';
 
 
 class AddOrEditCarScreen extends StatefulWidget {
@@ -253,11 +252,9 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen>{
 
   Future<bool> _carNameAlreadyUsed(String carName) async {
     bool result = false;
-    print(carName);
     try{
       DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('cars').doc(currentUserId).collection('user_cars').doc(carName).get();
       if(snapshot.exists){
-        print(snapshot.data());
         result = true;
       }
     } catch(error){

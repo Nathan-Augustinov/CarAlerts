@@ -54,7 +54,8 @@ class DefaultFirebaseOptions {
     appId: '1:1004713708148:android:41b1c9c2f336f814719f21',
     messagingSenderId: '1004713708148',
     projectId: 'caralerts-b4390',
-    storageBucket: 'caralerts-b4390.appspot.com',
+    databaseURL: 'https://caralerts-b4390-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'caralerts-b4390.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

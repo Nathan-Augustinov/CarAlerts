@@ -1,4 +1,3 @@
-import 'package:car_alerts/services/notifications_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,6 @@ class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   final String currentUserName = FirebaseAuth.instance.currentUser!.displayName!;
-  final NotificationsService _notificationService = NotificationsService();
   bool isLoading = true;
   List<Car> myCarList = [];
   List<MapEntry<String, int>> urgentItems = [];
@@ -67,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage>
       setState(() {
         isLoading = false;
       });
-      print("Error fetching cars: $e");
+      debugPrint("Error fetching cars: $e");
     }
   }
 

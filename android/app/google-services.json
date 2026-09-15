@@ -3,7 +3,7 @@
     "project_number": "1004713708148",
     "firebase_url": "https://caralerts-b4390-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "caralerts-b4390",
-    "storage_bucket": "caralerts-b4390.appspot.com"
+    "storage_bucket": "caralerts-b4390.firebasestorage.app"
   },
   "client": [
     {
@@ -20,6 +20,14 @@
           "android_info": {
             "package_name": "com.example.car_alerts",
             "certificate_hash": "ede272b20187f0a90cf487eae2434793f5a02221"
+          }
+        },
+        {
+          "client_id": "1004713708148-ge0j3jfmt2kt0hgdvjp1626taaku861i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.car_alerts",
+            "certificate_hash": "6a0b2c2dc314c55c3213464737b30e73d9219f15"
           }
         },
         {
@@ -40,10 +48,10 @@
               "client_type": 3
             },
             {
-              "client_id": "1004713708148-9gcc0gmkajg74en3me2e21h2mkj82233.apps.googleusercontent.com",
+              "client_id": "1004713708148-objf87vcr6c7n88jnd1u4d8f2kcaphs3.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.carAlerts.RunnerTests"
+                "bundle_id": "com.example.carAlerts"
               }
             }
           ]

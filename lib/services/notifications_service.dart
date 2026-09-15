@@ -30,7 +30,7 @@ class NotificationsService {
       requestSoundPermission: true,
     );
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    flutterLocalNotificationsPlugin.initialize(settings: initializationSettings);
     tz.initializeTimeZones();
   }
 
@@ -51,36 +51,33 @@ class NotificationsService {
     
     if(!scheduleNotificationOneWeekBefore.isBefore(DateTime.now())){
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        itemId.hashCode, 
-        title, 
-        'Your car insurance will expire in a week!', 
-        tz.TZDateTime.from(scheduleNotificationOneWeekBefore, tz.local),
-        platformDetails, 
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        id: itemId.hashCode,
+        title: title,
+        body: 'Your car insurance will expire in a week!',
+        scheduledDate: tz.TZDateTime.from(scheduleNotificationOneWeekBefore, tz.local),
+        notificationDetails: platformDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
       );
     }
     
     if(!scheduleNotificationThreeDaysBefore.isBefore(DateTime.now())) {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        itemId.hashCode, 
-        title, 
-        'Your car inspection will expire in three days!', 
-        tz.TZDateTime.from(scheduleNotificationThreeDaysBefore, tz.local),
-        platformDetails, 
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        id: itemId.hashCode,
+        title: title,
+        body: 'Your car inspection will expire in three days!',
+        scheduledDate: tz.TZDateTime.from(scheduleNotificationThreeDaysBefore, tz.local),
+        notificationDetails: platformDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
       );
     }
     
     if(!scheduleNotificationOneDayBefore.isBefore(DateTime.now())) {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        itemId.hashCode, 
-        title, 
-        'Your car inspection will expire tomorrow!', 
-        tz.TZDateTime.from(scheduleNotificationOneDayBefore, tz.local),
-        platformDetails, 
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        id: itemId.hashCode,
+        title: title,
+        body: 'Your car inspection will expire tomorrow!',
+        scheduledDate: tz.TZDateTime.from(scheduleNotificationOneDayBefore, tz.local),
+        notificationDetails: platformDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
       );
     }
