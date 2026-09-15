@@ -9,11 +9,9 @@ class MainScreen extends StatefulWidget {
 
   @override
   State<MainScreen> createState() => MainScreenState();
-
 }
 
-class MainScreenState extends State<MainScreen>{
-
+class MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   static final List<Widget> _tabOptions = <Widget>[
@@ -22,7 +20,7 @@ class MainScreenState extends State<MainScreen>{
     const ProfileScreen(),
   ];
 
-  void _onItemTapped(int index){
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -40,27 +38,63 @@ class MainScreenState extends State<MainScreen>{
       body: Center(
         child: _tabOptions.elementAt(_selectedIndex),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Color(0xFFE0E7EA))),
+        ),
+        child: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            height: 76,
+            indicatorColor: const Color(0xFFDDEEEA),
+            indicatorShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              final selected = states.contains(WidgetState.selected);
+              return TextStyle(
+                color: selected
+                    ? const Color(0xFF15766D)
+                    : const Color(0xFF647681),
+                fontSize: 12,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              );
+            }),
+            iconTheme:
+                WidgetStateProperty.resolveWith((states) => IconThemeData(
+                      color: states.contains(WidgetState.selected)
+                          ? const Color(0xFF15766D)
+                          : const Color(0xFF647681),
+                      size: 24,
+                    )),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.car_rental),
-            label: 'Your Cars',
+          child: NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: _onItemTapped,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.space_dashboard_outlined),
+                selectedIcon: Icon(Icons.space_dashboard_rounded),
+                label: 'Dashboard',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.directions_car_outlined),
+                selectedIcon: Icon(Icons.directions_car_rounded),
+                label: 'Your cars',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon: Icon(Icons.settings_rounded),
+                label: 'Settings',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        ),
       ),
     );
   }
-
-
 }
-
