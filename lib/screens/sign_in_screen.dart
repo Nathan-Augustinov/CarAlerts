@@ -257,6 +257,44 @@ class _SignInScreenState extends State<SignInScreen> {
         ]),
       ));
 
+  Widget _welcomeBanner(BuildContext context) {
+    return Container(
+      key: const ValueKey('welcome-banner'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration:
+          BoxDecoration(color: _ink, borderRadius: BorderRadius.circular(22)),
+      child:
+          const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.shield_outlined, color: Color(0xFF9EDBD0), size: 22),
+          SizedBox(width: 8),
+          Expanded(
+              child: Text('A LITTLE PEACE OF MIND',
+                  style: TextStyle(
+                      color: Color(0xFF9EDBD0),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2))),
+        ]),
+        SizedBox(height: 16),
+        Text('Less to remember.\nMore road ahead.',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 27,
+                height: 1.15,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5)),
+        ...[
+          SizedBox(height: 14),
+          Text('Insurance · Inspections · Vignettes',
+              style: TextStyle(
+                  color: Color(0xFFC3D0D6), fontSize: 12, height: 1.4)),
+        ],
+      ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: _background,
@@ -264,133 +302,95 @@ class _SignInScreenState extends State<SignInScreen> {
             child: Center(
                 child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                    color: _ink, borderRadius: BorderRadius.circular(24)),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(children: [
-                        Icon(Icons.shield_outlined,
-                            color: Color(0xFF9EDBD0), size: 24),
-                        SizedBox(width: 10),
-                        Expanded(
-                            child: Text('A LITTLE PEACE OF MIND',
-                                style: TextStyle(
-                                    color: Color(0xFF9EDBD0),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.5))),
-                      ]),
-                      const SizedBox(height: 16),
-                      const Text('Less to remember.\nMore road ahead.',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 30,
-                              height: 1.15,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -1)),
-                      const SizedBox(height: 10),
-                      const Text(
-                          'Keep your cars and their important dates together, wherever life takes you.',
-                          style: TextStyle(
-                              color: Color(0xFFC3D0D6),
-                              fontSize: 13,
-                              height: 1.5)),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                            color: const Color(0xFF29444D),
-                            borderRadius: BorderRadius.circular(16)),
-                        child: const Row(children: [
-                          Icon(Icons.event_available_outlined,
-                              color: Color(0xFF9EDBD0), size: 26),
-                          SizedBox(width: 12),
-                          Expanded(
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                Text('Every deadline, in one place',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700)),
-                                SizedBox(height: 5),
-                                Text('Insurance · Inspections · Vignettes',
-                                    style: TextStyle(
-                                        color: Color(0xFFC3D0D6),
-                                        fontSize: 11,
-                                        height: 1.5)),
-                              ])),
-                        ]),
-                      ),
-                    ]),
-              ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+            child: Column(children: [
+              _welcomeBanner(context),
               const SizedBox(height: 14),
-              Text(_creatingAccount ? 'Create your account' : 'Welcome',
-                  style: const TextStyle(
-                      color: _ink,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5)),
-              const SizedBox(height: 12),
-              _emailForm(),
-              SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: _ink,
-                      disabledBackgroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFFD4DEE2)),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+              Expanded(
+                  child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Column(
+                      key: const ValueKey('auth-content'),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                            _creatingAccount
+                                ? 'Create your account'
+                                : 'Welcome',
+                            style: const TextStyle(
+                                color: _ink,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.5)),
+                        const SizedBox(height: 12),
+                        _emailForm(),
+                        SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: _ink,
+                                disabledBackgroundColor: Colors.white,
+                                side:
+                                    const BorderSide(color: Color(0xFFD4DEE2)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                              ),
+                              onPressed: _signingIn
+                                  ? null
+                                  : () => _authenticate('google'),
+                              icon: _operation == 'google'
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: _teal))
+                                  : Image.asset(
+                                      'assets/images/google_sign_in_logo.png',
+                                      width: 22,
+                                      height: 22),
+                              label: Text(
+                                  _operation == 'google'
+                                      ? 'Signing in…'
+                                      : 'Sign in with Google',
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600)),
+                            )),
+                        if (_notice != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 14),
+                            child: Semantics(
+                                liveRegion: true,
+                                child: Text(_notice!,
+                                    style: const TextStyle(
+                                        color: _teal, height: 1.5))),
+                          ),
+                        if (_error != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 14),
+                            child: Semantics(
+                                liveRegion: true,
+                                child: Text(_error!,
+                                    style: const TextStyle(
+                                        color: Color(0xFFAD3939),
+                                        fontSize: 13,
+                                        height: 1.5))),
+                          ),
+                      ],
                     ),
-                    onPressed:
-                        _signingIn ? null : () => _authenticate('google'),
-                    icon: _operation == 'google'
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: _teal))
-                        : Image.asset('assets/images/google_sign_in_logo.png',
-                            width: 22, height: 22),
-                    label: Text(
-                        _operation == 'google'
-                            ? 'Signing in…'
-                            : 'Sign in with Google',
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w600)),
-                  )),
-              if (_notice != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 14),
-                  child: Semantics(
-                      liveRegion: true,
-                      child: Text(_notice!,
-                          style: const TextStyle(color: _teal, height: 1.5))),
+                  ),
                 ),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 14),
-                  child: Semantics(
-                      liveRegion: true,
-                      child: Text(_error!,
-                          style: const TextStyle(
-                              color: Color(0xFFAD3939),
-                              fontSize: 13,
-                              height: 1.5))),
-                ),
+              )),
             ]),
           ),
         ))),
