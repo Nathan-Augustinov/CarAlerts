@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:car_alerts/main.dart';
 import 'package:car_alerts/models/car.dart';
 import 'package:car_alerts/services/notifications_service.dart';
+import 'package:car_alerts/services/notification_permission_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -44,7 +45,6 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   @override
   void initState() {
     super.initState();
-    _notificationService.localNotificationsInitialization();
     if (widget.car != null) {
       _loadCarDetails();
     }
@@ -400,6 +400,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
 
       if (widget.car == null) {
         bool nameUsed = await _carNameAlreadyUsed(carName);
+        if (!mounted) return;
         if (nameUsed) {
           _showErrorPopUp(
               "You already have a car with this name or identification number saved!",
@@ -434,12 +435,11 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
             "Please select the austrian vignette expiration date!", errorText);
         return;
       }
-      _scheduleNotificationsForItems();
-      _addCarToDatabase();
+      await _addCarToDatabase();
     }
   }
 
-  void _addCarToDatabase() {
+  Future<void> _addCarToDatabase() async {
     Map<String, dynamic> carData = {
       'insurance_date':
           isInsuranceSelected ? insuranceExpiringDate?.toIso8601String() : null,
@@ -457,24 +457,115 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
           : null,
     };
 
-    FirebaseFirestore.instance
-        .collection('cars')
-        .doc(currentUserId)
-        .collection('user_cars')
-        .doc(carName)
-        .set(carData)
-        .then((_) {
-      _showErrorPopUp(
-          widget.car == null
-              ? "Car successfully added!"
-              : "Car successfully edited!",
-          successText);
-    }).catchError((error) {
-      _showErrorPopUp("Error at adding the car into the database!", errorText);
-    });
+    try {
+      await FirebaseFirestore.instance
+          .collection('cars')
+          .doc(currentUserId)
+          .collection('user_cars')
+          .doc(carName)
+          .set(carData);
+    } catch (_) {
+      if (mounted) {
+        _showErrorPopUp(
+            'Could not save your car. Please try again.', errorText);
+      }
+      return;
+    }
+    if (!mounted) return;
+    String? reminderWarning;
+    bool notificationsOff = false;
+    if (carData.values.any((value) => value != null)) {
+      try {
+        final permissions = NotificationPermissionService();
+        await permissions.requestIfNotAsked();
+        notificationsOff =
+            await permissions.status() != NotificationPermission.enabled;
+        await _scheduleNotificationsForItems();
+      } catch (_) {
+        reminderWarning =
+            'Your car was saved, but reminders could not be scheduled. Check notification settings and save the car again.';
+      }
+    }
+    if (!mounted) return;
+    if (widget.car == null && notificationsOff) {
+      _showNotificationsOffReminder(reminderWarning);
+      return;
+    }
+    _showErrorPopUp(
+        reminderWarning ??
+            (widget.car == null
+                ? 'Car successfully added!'
+                : 'Car successfully edited!'),
+        successText);
+  }
+
+  void _showNotificationsOffReminder(String? schedulingWarning) {
+    // Capture the app-level messenger before closing the form so the action
+    // continues to work on Your Cars, after this State has been disposed.
+    final messenger = ScaffoldMessenger.of(context);
+    Navigator.of(context).pop();
+    mainScreenKey.currentState?.selectTab(1);
+    messenger.showSnackBar(SnackBar(
+      duration: const Duration(seconds: 8),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: const Color(0xFF0D1B1E),
+      elevation: 6,
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      content: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: const Color(0xFFC3DBC5).withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.notifications_active_outlined,
+                color: Color(0xFFC3DBC5), size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Turn on reminders',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 3),
+                Text(
+                  schedulingWarning == null
+                      ? 'Car saved. Get expiry alerts.'
+                      : 'Turn on notifications for expiry reminders.',
+                  style: const TextStyle(
+                      color: Color(0xFFC3DBC5), fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      action: SnackBarAction(
+        label: 'Settings',
+        textColor: const Color(0xFFC3DBC5),
+        onPressed: () async {
+          try {
+            await NotificationPermissionService().openSettings();
+          } catch (_) {
+            if (!messenger.mounted) return;
+            messenger.showSnackBar(const SnackBar(
+              content: Text(
+                  'Could not open settings. Enable notifications manually.'),
+            ));
+          }
+        },
+      ),
+    ));
   }
 
   void _showErrorPopUp(String errorMessage, String titleMesssage) {
+    if (!mounted) return;
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -545,27 +636,27 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
             : null;
   }
 
-  void _scheduleNotificationsForItems() {
+  Future<void> _scheduleNotificationsForItems() async {
     if (isInsuranceSelected && insuranceExpiringDate != null) {
-      _notificationService.scheduleNotification(
+      await _notificationService.scheduleNotification(
           'insurance', insuranceExpiringDate!, '$carName Insurance Reminder');
     }
     if (isInspectionSelected && inspectionExpiringDate != null) {
-      _notificationService.scheduleNotification('inspection',
+      await _notificationService.scheduleNotification('inspection',
           inspectionExpiringDate!, '$carName Inspection Reminder');
     }
     if (isRomanianVignetteSelected && romanianVignetteExpiringDate != null) {
-      _notificationService.scheduleNotification('romanian_vignette',
+      await _notificationService.scheduleNotification('romanian_vignette',
           romanianVignetteExpiringDate!, '$carName Romanian Vignette Reminder');
     }
     if (isHungarianVignetteSelected && hungarianVignetteExpiringDate != null) {
-      _notificationService.scheduleNotification(
+      await _notificationService.scheduleNotification(
           'hungarian_vignette',
           hungarianVignetteExpiringDate!,
           '$carName Hungarian Vignette Reminder');
     }
     if (isAustrianVignetteSelected && austrianVignetteExpiringDate != null) {
-      _notificationService.scheduleNotification('austrian_vignette',
+      await _notificationService.scheduleNotification('austrian_vignette',
           austrianVignetteExpiringDate!, '$carName Austrian Vignette Reminder');
     }
   }

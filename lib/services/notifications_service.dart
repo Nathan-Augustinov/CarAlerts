@@ -1,45 +1,47 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
 class NotificationsService {
-  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
+  static Future<void>? _initialization;
+  FlutterLocalNotificationsPlugin get flutterLocalNotificationsPlugin =>
+      _plugin;
 
-  // Future<void> requestAndStoreInDatabaseNotificationPermission(User user) async {
-  //   NotificationSettings settings = await _firebaseMessaging.requestPermission(
-  //     alert: true,
-  //     badge: true,
-  //     sound: true,
-  //   );
+  Future<void> localNotificationsInitialization() =>
+      _initialization ??= _initialize();
 
-  //   bool notificationsEnabled = settings.authorizationStatus == AuthorizationStatus.authorized;
-  //   _firestore.collection('users').doc(user.uid).collection('settings').doc('user_settings').update({
-  //     'notifications': notificationsEnabled,
-  //   });
-  // }
-
-  void localNotificationsInitialization(){
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+  Future<void> _initialize() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
-    const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(settings: initializationSettings);
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsIOS);
+    await flutterLocalNotificationsPlugin.initialize(
+        settings: initializationSettings);
     tz.initializeTimeZones();
   }
 
   //TODO: Debugging to see if the notifications are being scheduled
-  void scheduleNotification(String itemId, DateTime expiringDate, String title) async {
-    final DateTime scheduleNotificationOneWeekBefore = expiringDate.subtract(const Duration(days: 7));
-    final DateTime scheduleNotificationThreeDaysBefore = expiringDate.subtract(const Duration(days: 3));
-    final DateTime scheduleNotificationOneDayBefore = expiringDate.subtract(const Duration(days: 1));
-    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+  Future<void> scheduleNotification(
+      String itemId, DateTime expiringDate, String title) async {
+    await localNotificationsInitialization();
+    final DateTime scheduleNotificationOneWeekBefore =
+        expiringDate.subtract(const Duration(days: 7));
+    final DateTime scheduleNotificationThreeDaysBefore =
+        expiringDate.subtract(const Duration(days: 3));
+    final DateTime scheduleNotificationOneDayBefore =
+        expiringDate.subtract(const Duration(days: 1));
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
       '1',
       'Expiry Notifications',
       channelDescription: 'Notifications for items that are about to expire',
@@ -47,39 +49,40 @@ class NotificationsService {
       priority: Priority.high,
     );
     const iosDetails = DarwinNotificationDetails();
-    const NotificationDetails platformDetails = NotificationDetails(android: androidPlatformChannelSpecifics, iOS: iosDetails);
-    
-    if(!scheduleNotificationOneWeekBefore.isBefore(DateTime.now())){
+    const NotificationDetails platformDetails = NotificationDetails(
+        android: androidPlatformChannelSpecifics, iOS: iosDetails);
+
+    if (!scheduleNotificationOneWeekBefore.isBefore(DateTime.now())) {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: itemId.hashCode,
-        title: title,
-        body: 'Your car insurance will expire in a week!',
-        scheduledDate: tz.TZDateTime.from(scheduleNotificationOneWeekBefore, tz.local),
-        notificationDetails: platformDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
-      );
+          id: itemId.hashCode,
+          title: title,
+          body: 'Your car insurance will expire in a week!',
+          scheduledDate:
+              tz.TZDateTime.from(scheduleNotificationOneWeekBefore, tz.local),
+          notificationDetails: platformDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
     }
-    
-    if(!scheduleNotificationThreeDaysBefore.isBefore(DateTime.now())) {
+
+    if (!scheduleNotificationThreeDaysBefore.isBefore(DateTime.now())) {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: itemId.hashCode,
-        title: title,
-        body: 'Your car inspection will expire in three days!',
-        scheduledDate: tz.TZDateTime.from(scheduleNotificationThreeDaysBefore, tz.local),
-        notificationDetails: platformDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
-      );
+          id: itemId.hashCode,
+          title: title,
+          body: 'Your car inspection will expire in three days!',
+          scheduledDate:
+              tz.TZDateTime.from(scheduleNotificationThreeDaysBefore, tz.local),
+          notificationDetails: platformDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
     }
-    
-    if(!scheduleNotificationOneDayBefore.isBefore(DateTime.now())) {
+
+    if (!scheduleNotificationOneDayBefore.isBefore(DateTime.now())) {
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id: itemId.hashCode,
-        title: title,
-        body: 'Your car inspection will expire tomorrow!',
-        scheduledDate: tz.TZDateTime.from(scheduleNotificationOneDayBefore, tz.local),
-        notificationDetails: platformDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle
-      );
+          id: itemId.hashCode,
+          title: title,
+          body: 'Your car inspection will expire tomorrow!',
+          scheduledDate:
+              tz.TZDateTime.from(scheduleNotificationOneDayBefore, tz.local),
+          notificationDetails: platformDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
     }
   }
 }
