@@ -1,6 +1,7 @@
 import 'package:car_alerts/services/authentication_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../services/notification_permission_service.dart';
 
 const _ink = Color(0xFF172D38);
 const _teal = Color(0xFF15766D);
@@ -14,8 +15,150 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen>
+    with WidgetsBindingObserver {
   bool _signingOut = false;
+
+  final _permissionService = NotificationPermissionService();
+  NotificationPermission? _permission;
+  bool _checkingPermission = true;
+  bool _permissionAction = false;
+  String? _permissionError;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refreshPermission();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshPermission();
+  }
+
+  Future<void> _refreshPermission() async {
+    try {
+      final permission = await _permissionService.status();
+      if (!mounted) return;
+      setState(() {
+        _permission = permission;
+        _checkingPermission = false;
+        _permissionError = null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _permission = null;
+        _checkingPermission = false;
+        _permissionError = 'Unable to check. Tap to retry.';
+      });
+    }
+  }
+
+  Future<void> _enableNotifications() async {
+    if (_permissionAction || _checkingPermission) return;
+    setState(() => _permissionAction = true);
+    try {
+      final status = await _permissionService.status();
+      if (!mounted) return;
+      if (status == NotificationPermission.notRequested) {
+        await _permissionService.request();
+      } else if (status == NotificationPermission.disabled) {
+        await _permissionService.openSettings();
+      }
+      await _refreshPermission();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content:
+            Text('Could not open notification settings. Please try again.'),
+      ));
+    } finally {
+      if (mounted) setState(() => _permissionAction = false);
+    }
+  }
+
+  Widget _notificationSetting() {
+    final enabled = _permission == NotificationPermission.enabled;
+    final loading = _checkingPermission || _permissionAction;
+    final label = _checkingPermission
+        ? 'Checking…'
+        : _permissionError != null
+            ? 'Status unavailable'
+            : enabled
+                ? 'Enabled'
+                : 'Not enabled';
+    return InkWell(
+      onTap: loading || enabled
+          ? null
+          : _permissionError != null
+              ? _refreshPermission
+              : _enableNotifications,
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                color: _background, borderRadius: BorderRadius.circular(12)),
+            child: const Icon(Icons.notifications_none_outlined,
+                color: _teal, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                const Text('Notifications',
+                    style: TextStyle(
+                        color: _ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(height: 5),
+                Text(label,
+                    style: TextStyle(
+                        color: enabled ? _teal : _muted,
+                        fontSize: 12,
+                        height: 1.5,
+                        fontWeight: FontWeight.w600)),
+                if (!enabled && !_checkingPermission) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                      _permissionError ??
+                          (_permission == NotificationPermission.notRequested
+                              ? 'Tap to allow expiry reminders.'
+                              : 'Tap to enable in phone settings.'),
+                      style: const TextStyle(
+                          color: _muted, fontSize: 12, height: 1.5)),
+                ],
+              ])),
+          const SizedBox(width: 12),
+          SizedBox(
+            height: 42,
+            width: 24,
+            child: Center(
+                child: loading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: _teal))
+                    : enabled
+                        ? const Icon(Icons.check_circle_outline,
+                            color: _teal, size: 22)
+                        : const Icon(Icons.chevron_right, color: _muted)),
+          ),
+        ]),
+      ),
+    );
+  }
 
   Future<void> _signOut() async {
     if (_signingOut) return;
@@ -114,8 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   indent: 18,
                   endIndent: 18,
                   color: Color(0xFFEAF0F2)),
-              _setting(Icons.notifications_none_outlined, 'Notifications',
-                  'Notification preferences aren’t available yet.'),
+              _notificationSetting(),
             ]),
             const SizedBox(height: 28),
             _heading('Help & feedback', 'Help shape what comes next.'),
