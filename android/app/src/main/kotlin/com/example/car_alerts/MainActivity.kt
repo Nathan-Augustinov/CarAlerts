@@ -30,6 +30,25 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "car_alerts/appearance")
+            .setMethodCallHandler { call, result ->
+                val preferences = getSharedPreferences("appearance", MODE_PRIVATE)
+                when (call.method) {
+                    "load" -> result.success(preferences.getString("theme_mode", "system"))
+                    "save" -> {
+                        val mode = call.arguments as? String
+                        if (mode !in listOf("system", "light", "dark")) {
+                            result.error("invalid_theme", "Unknown appearance", null)
+                        } else if (preferences.edit().putString("theme_mode", mode).commit()) {
+                            result.success(null)
+                        } else {
+                            result.error("storage_failed", "Could not save appearance", null)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "car_alerts/feedback")
             .setMethodCallHandler { call, result ->
                 when (call.method) {

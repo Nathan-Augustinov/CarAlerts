@@ -1,11 +1,7 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/feedback_service.dart';
-
-const _ink = Color(0xFF172D38);
-const _teal = Color(0xFF15766D);
-const _muted = Color(0xFF647681);
-const _background = Color(0xFFF3F6F7);
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -52,10 +48,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   Widget build(BuildContext context) {
     final problem = _type == FeedbackType.problem;
     return Scaffold(
-      backgroundColor: _background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
-        backgroundColor: _background,
-        foregroundColor: _ink,
+        backgroundColor: context.palette.background,
+        foregroundColor: context.palette.ink,
         elevation: 0,
         title: const Text('Help & feedback'),
       ),
@@ -71,32 +67,33 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                        color: _ink, borderRadius: BorderRadius.circular(20)),
-                    child: const Column(
+                        color: context.palette.banner,
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(Icons.forum_outlined,
-                              color: Color(0xFF9EDBD0), size: 32),
-                          SizedBox(height: 18),
+                              color: context.palette.bannerAccent, size: 32),
+                          const SizedBox(height: 18),
                           Text('Make CarAlerts better',
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: context.palette.onBanner,
                                   fontSize: 26,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.5)),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Text(
                               'Have an idea or spotted a problem? We’d love to hear from you.',
                               style: TextStyle(
-                                  color: Color(0xFFC3D0D6),
+                                  color: context.palette.bannerMuted,
                                   fontSize: 14,
                                   height: 1.6)),
                         ]),
                   ),
                   const SizedBox(height: 26),
-                  const Text('What would you like to share?',
+                  Text('What would you like to share?',
                       style: TextStyle(
-                          color: _ink,
+                          color: context.palette.ink,
                           fontSize: 17,
                           fontWeight: FontWeight.w700)),
                   const SizedBox(height: 12),
@@ -113,29 +110,29 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                                   padding: const EdgeInsets.only(bottom: 10),
                                   child: Material(
                                     color: _type == type
-                                        ? const Color(0xFFE6F3EF)
-                                        : Colors.white,
+                                        ? context.palette.selected
+                                        : context.palette.surface,
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         side: BorderSide(
                                             color: _type == type
-                                                ? _teal
-                                                : const Color(0xFFE0E7EA))),
+                                                ? context.palette.accent
+                                                : context.palette.border)),
                                     clipBehavior: Clip.antiAlias,
                                     child: RadioListTile<FeedbackType>(
                                       value: type,
-                                      activeColor: _teal,
+                                      activeColor: context.palette.accent,
                                       enabled: !_opening,
                                       title: Text(type.label,
-                                          style: const TextStyle(
-                                              color: _ink,
+                                          style: TextStyle(
+                                              color: context.palette.ink,
                                               fontSize: 14,
                                               fontWeight: FontWeight.w700)),
                                       secondary: Icon(
                                           type == FeedbackType.problem
                                               ? Icons.bug_report_outlined
                                               : Icons.lightbulb_outline,
-                                          color: _teal),
+                                          color: context.palette.accent),
                                     ),
                                   ),
                                 ))
@@ -143,15 +140,17 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text('Email subject: ${_type.subject}',
-                      style: const TextStyle(
-                          color: _muted, fontSize: 12, height: 1.5)),
+                      style: TextStyle(
+                          color: context.palette.muted,
+                          fontSize: 12,
+                          height: 1.5)),
                   const SizedBox(height: 20),
                   Text(
                       problem
                           ? 'Tell us what happened'
                           : 'Tell us about your idea',
-                      style: const TextStyle(
-                          color: _ink,
+                      style: TextStyle(
+                          color: context.palette.ink,
                           fontSize: 17,
                           fontWeight: FontWeight.w700)),
                   const SizedBox(height: 10),
@@ -162,58 +161,61 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     minLines: 7,
                     maxLines: 14,
                     textCapitalization: TextCapitalization.sentences,
-                    style:
-                        const TextStyle(color: _ink, fontSize: 15, height: 1.5),
+                    style: TextStyle(
+                        color: context.palette.ink, fontSize: 15, height: 1.5),
                     decoration: InputDecoration(
                       hintText: problem
                           ? 'What went wrong? What were you doing, and what did you expect to happen?'
                           : 'What could we improve, and how would it help you?',
-                      hintStyle: const TextStyle(color: _muted, fontSize: 14),
+                      hintStyle:
+                          TextStyle(color: context.palette.muted, fontSize: 14),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: context.palette.surface,
                       contentPadding: const EdgeInsets.all(18),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide:
-                              const BorderSide(color: Color(0xFFE0E7EA))),
+                              BorderSide(color: context.palette.border)),
                       enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide:
-                              const BorderSide(color: Color(0xFFE0E7EA))),
+                              BorderSide(color: context.palette.border)),
                       focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: _teal, width: 2)),
+                          borderSide: BorderSide(
+                              color: context.palette.accent, width: 2)),
                     ),
                     validator: (value) => value == null || value.trim().isEmpty
                         ? 'Please write a message before continuing.'
                         : null,
                   ),
                   const SizedBox(height: 18),
-                  const Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.info_outline, size: 20, color: _teal),
-                        SizedBox(width: 10),
-                        Expanded(
-                            child: Text(
-                                'To help us understand your feedback, your phone model, OS version, and app version are automatically added at the end of the email.',
-                                style: TextStyle(
-                                    color: _muted, fontSize: 12, height: 1.6))),
-                      ]),
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Icon(Icons.info_outline,
+                        size: 20, color: context.palette.accent),
+                    const SizedBox(width: 10),
+                    Expanded(
+                        child: Text(
+                            'To help us understand your feedback, your phone model, OS version, and app version are automatically added at the end of the email.',
+                            style: TextStyle(
+                                color: context.palette.muted,
+                                fontSize: 12,
+                                height: 1.6))),
+                  ]),
                   const SizedBox(height: 24),
                   if (_error != null) ...[
                     Semantics(
                         liveRegion: true,
                         child: Text(_error!,
-                            style: const TextStyle(
-                                color: Color(0xFFAD3939), height: 1.5))),
+                            style: TextStyle(
+                                color: context.palette.error, height: 1.5))),
                     const SizedBox(height: 14),
                   ],
                   FilledButton.icon(
                     onPressed: _opening ? null : _compose,
                     style: FilledButton.styleFrom(
-                        backgroundColor: _teal,
-                        foregroundColor: Colors.white,
+                        backgroundColor: context.palette.accent,
+                        foregroundColor: context.palette.onAccent,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 17),
                         shape: RoundedRectangleBorder(
@@ -228,11 +230,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         _opening ? 'Preparing email…' : 'Continue to email'),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                      'Review and send from your email app.',
+                  Text('Review and send from your email app.',
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: _muted, fontSize: 12, height: 1.6)),
+                      style: TextStyle(
+                          color: context.palette.muted,
+                          fontSize: 12,
+                          height: 1.6)),
                 ],
               ),
             ),
