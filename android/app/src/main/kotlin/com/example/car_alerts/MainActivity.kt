@@ -30,6 +30,35 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "car_alerts/feedback")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "deviceDetails" -> {
+                        val info = packageManager.getPackageInfo(packageName, 0)
+                        val build = if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode.toLong()
+                        result.success(mapOf(
+                            "model" to "${Build.MANUFACTURER} ${Build.MODEL}",
+                            "os" to "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})",
+                            "version" to "${info.versionName} ($build)"
+                        ))
+                    }
+                    "compose" -> {
+                        try {
+                            val uri = call.argument<String>("uri") ?: throw IllegalArgumentException("Missing email")
+                            val intent = Intent(Intent.ACTION_SENDTO, android.net.Uri.parse(uri))
+                            if (intent.resolveActivity(packageManager) == null) {
+                                result.error("email_unavailable", "No email app is available", null)
+                            } else {
+                                startActivity(Intent.createChooser(intent, "Choose an email app"))
+                                result.success(null)
+                            }
+                        } catch (error: Exception) {
+                            result.error("email_unavailable", error.message, null)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "car_alerts/notification_permissions")
             .setMethodCallHandler { call, result ->
                 when (call.method) {

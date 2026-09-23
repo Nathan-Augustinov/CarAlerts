@@ -14,6 +14,40 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    let feedbackRegistrar = engineBridge.pluginRegistry.registrar(forPlugin: "FeedbackBridge")!
+    let feedbackChannel = FlutterMethodChannel(name: "car_alerts/feedback", binaryMessenger: feedbackRegistrar.messenger())
+    feedbackChannel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "deviceDetails":
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        let machineSize = MemoryLayout.size(ofValue: systemInfo.machine)
+        let model = withUnsafePointer(to: &systemInfo.machine) { pointer in
+          pointer.withMemoryRebound(to: CChar.self, capacity: machineSize) {
+            String(cString: $0)
+          }
+        }
+        let info = Bundle.main.infoDictionary ?? [:]
+        let version = info["CFBundleShortVersionString"] as? String ?? "Unavailable"
+        let build = info["CFBundleVersion"] as? String ?? "Unavailable"
+        result([
+          "model": "\(UIDevice.current.model) (\(model))",
+          "os": "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)",
+          "version": "\(version) (\(build))"
+        ])
+      case "compose":
+        guard let args = call.arguments as? [String: String],
+              let address = args["uri"], let url = URL(string: address), url.scheme == "mailto" else {
+          result(FlutterError(code: "invalid_email", message: "Invalid email address", details: nil))
+          return
+        }
+        UIApplication.shared.open(url, options: [:]) { opened in
+          if opened { result(nil) }
+          else { result(FlutterError(code: "email_unavailable", message: "No email app is available", details: nil)) }
+        }
+      default: result(FlutterMethodNotImplemented)
+      }
+    }
     let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "NotificationPermissionBridge")!
     let channel = FlutterMethodChannel(name: "car_alerts/notification_permissions", binaryMessenger: registrar.messenger())
     channel.setMethodCallHandler { call, result in

@@ -1,4 +1,5 @@
 import '../services/notifications_service.dart';
+import 'feedback_screen.dart';
 import 'package:car_alerts/services/authentication_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -268,8 +269,22 @@ class _ProfileScreenState extends State<ProfileScreen>
             const SizedBox(height: 28),
             _heading('Help & feedback', 'Help shape what comes next.'),
             _card([
-              _setting(Icons.chat_bubble_outline, 'Suggest an improvement',
-                  'In-app feedback isn’t available yet.'),
+              ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                leading: const Icon(Icons.forum_outlined, color: _teal),
+                title: const Text('Share feedback',
+                    style: TextStyle(
+                        color: _ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700)),
+                subtitle: const Text(
+                    'Suggest an improvement or report a problem.',
+                    style: TextStyle(color: _muted, fontSize: 12, height: 1.5)),
+                trailing: const Icon(Icons.chevron_right, color: _muted),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => const FeedbackScreen())),
+              ),
             ]),
             const SizedBox(height: 28),
             _heading('Account', 'Manage your session on this device.'),
