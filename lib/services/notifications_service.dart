@@ -21,22 +21,79 @@ class NotificationsService extends ReminderBackend {
   void Function(String?)? onTap;
   String? launchPayload;
   Timer? _retry;
+  bool _deletingAccount = false;
   Future<ReminderStatus> refresh(
       {String? savedUser,
       String? savedCar,
+      String? renamedFrom,
       Map<String, dynamic>? savedDates}) async {
+    if (_deletingAccount) return ReminderStatus.ready;
     final status = await coordinator.refresh(
-        savedUser: savedUser, savedCar: savedCar, savedDates: savedDates);
+        savedUser: savedUser,
+        savedCar: savedCar,
+        renamedFrom: renamedFrom,
+        savedDates: savedDates);
     _retry?.cancel();
-    if (status == ReminderStatus.failed) {
+    if (status == ReminderStatus.failed && !_deletingAccount) {
       _retry = Timer(
           const Duration(minutes: 1),
           () => refresh(
               savedUser: savedUser,
               savedCar: savedCar,
+              renamedFrom: renamedFrom,
               savedDates: savedDates));
     }
     return status;
+  }
+
+  Future<void> withoutAccountReminders(
+      String account, Future<void> Function() deleteDataAndAccount) async {
+    if (_deletingAccount) {
+      throw StateError('Account deletion is already running');
+    }
+    _deletingAccount = true;
+    _retry?.cancel();
+    try {
+      await coordinator.exclusive(() async {
+        await initialize();
+        final ids = await loadIds();
+        final history = await loadHistory();
+        bool belongsToAccount(String key) {
+          final decoded = jsonDecode(key);
+          return decoded is List &&
+              decoded.isNotEmpty &&
+              decoded.first == account;
+        }
+
+        final ownedIds = ids.entries
+            .where((entry) => belongsToAccount(entry.key))
+            .map((entry) => entry.value)
+            .toSet();
+        for (final entry in (await pending()).entries) {
+          try {
+            if ((jsonDecode(entry.value ?? '') as Map)['user'] == account) {
+              ownedIds.add(entry.key);
+            }
+          } catch (_) {
+            // Unrelated legacy payloads do not identify this account.
+          }
+        }
+        // Registry IDs include delivered alerts as well as pending reminders.
+        for (final id in ownedIds) {
+          await cancel(id);
+        }
+        history.removeWhere((key, _) => belongsToAccount(key));
+        await saveHistory(history);
+        ids.removeWhere((key, _) => belongsToAccount(key));
+        await saveIds(ids);
+        await deleteDataAndAccount();
+      });
+    } finally {
+      _deletingAccount = false;
+      // Restore remaining reminders after a failed deletion, or reconcile the
+      // signed-out state after a successful one.
+      unawaited(refresh());
+    }
   }
 
   @override
