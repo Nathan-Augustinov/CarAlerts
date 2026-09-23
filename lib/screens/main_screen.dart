@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:car_alerts/main.dart';
 import 'package:car_alerts/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
@@ -39,26 +40,25 @@ class MainScreenState extends State<MainScreen> {
         child: _tabOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFE0E7EA))),
+        decoration: BoxDecoration(
+          color: context.palette.surface,
+          border: Border(top: BorderSide(color: context.palette.border)),
         ),
         child: NavigationBarTheme(
           data: NavigationBarThemeData(
-            backgroundColor: Colors.white,
+            backgroundColor: context.palette.surface,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             height: 76,
-            indicatorColor: const Color(0xFFDDEEEA),
+            indicatorColor: context.palette.selected,
             indicatorShape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
             labelTextStyle: WidgetStateProperty.resolveWith((states) {
               final selected = states.contains(WidgetState.selected);
               return TextStyle(
-                color: selected
-                    ? const Color(0xFF15766D)
-                    : const Color(0xFF647681),
+                color:
+                    selected ? context.palette.accent : context.palette.muted,
                 fontSize: 12,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               );
@@ -66,8 +66,8 @@ class MainScreenState extends State<MainScreen> {
             iconTheme:
                 WidgetStateProperty.resolveWith((states) => IconThemeData(
                       color: states.contains(WidgetState.selected)
-                          ? const Color(0xFF15766D)
-                          : const Color(0xFF647681),
+                          ? context.palette.accent
+                          : context.palette.muted,
                       size: 24,
                     )),
           ),

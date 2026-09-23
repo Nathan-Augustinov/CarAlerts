@@ -14,6 +14,24 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    let appearanceRegistrar = engineBridge.pluginRegistry.registrar(forPlugin: "AppearanceBridge")!
+    let appearanceChannel = FlutterMethodChannel(name: "car_alerts/appearance", binaryMessenger: appearanceRegistrar.messenger())
+    appearanceChannel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "load":
+        result(UserDefaults.standard.string(forKey: "appearance.theme_mode") ?? "system")
+      case "save":
+        guard let mode = call.arguments as? String,
+              ["system", "light", "dark"].contains(mode) else {
+          result(FlutterError(code: "invalid_theme", message: "Unknown appearance", details: nil))
+          return
+        }
+        UserDefaults.standard.set(mode, forKey: "appearance.theme_mode")
+        result(nil)
+      default: result(FlutterMethodNotImplemented)
+      }
+    }
+
     let feedbackRegistrar = engineBridge.pluginRegistry.registrar(forPlugin: "FeedbackBridge")!
     let feedbackChannel = FlutterMethodChannel(name: "car_alerts/feedback", binaryMessenger: feedbackRegistrar.messenger())
     feedbackChannel.setMethodCallHandler { call, result in

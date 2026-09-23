@@ -1,3 +1,6 @@
+import 'package:flutter/services.dart';
+import 'services/appearance_controller.dart';
+import 'theme/app_theme.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,6 +18,7 @@ import 'screens/splash_screen.dart';
 GlobalKey<MainScreenState> mainScreenKey = GlobalKey();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppearanceController.instance.load();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -32,6 +36,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final _navigator = GlobalKey<NavigatorState>();
   final _messenger = GlobalKey<ScaffoldMessengerState>();
   StreamSubscription<User?>? _auth;
+  late final _authState = FirebaseAuth.instance.authStateChanges();
   String? _renderedUser;
   final _notifications = NotificationsService.instance;
 
@@ -40,7 +45,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _notifications.onTap = _openReminder;
-    _auth = FirebaseAuth.instance.authStateChanges().listen((_) {
+    _auth = _authState.listen((_) {
       _navigator.currentState?.popUntil((route) => route.isFirst);
       _refresh();
     });
@@ -104,29 +109,35 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: _navigator,
-      scaffoldMessengerKey: _messenger,
-      title: 'Car Alerts',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SplashScreen();
-          } else if (snapshot.hasData) {
-            if (_renderedUser != snapshot.data!.uid) {
-              _renderedUser = snapshot.data!.uid;
-              mainScreenKey = GlobalKey<MainScreenState>();
+    return ListenableBuilder(
+      listenable: AppearanceController.instance,
+      builder: (context, _) => MaterialApp(
+        navigatorKey: _navigator,
+        scaffoldMessengerKey: _messenger,
+        title: 'Car Alerts',
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: AppearanceController.instance.mode,
+        builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+          value: AppTheme.systemBars(Theme.of(context).brightness),
+          child: child!,
+        ),
+        home: StreamBuilder(
+          stream: _authState,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SplashScreen();
+            } else if (snapshot.hasData) {
+              if (_renderedUser != snapshot.data!.uid) {
+                _renderedUser = snapshot.data!.uid;
+                mainScreenKey = GlobalKey<MainScreenState>();
+              }
+              return MainScreen();
+            } else {
+              return const SignInScreen();
             }
-            return MainScreen();
-          } else {
-            return const SignInScreen();
-          }
-        },
+          },
+        ),
       ),
     );
   }

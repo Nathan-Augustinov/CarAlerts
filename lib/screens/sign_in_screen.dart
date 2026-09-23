@@ -1,12 +1,8 @@
+import '../theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:car_alerts/services/user_settings_service.dart';
 import 'package:flutter/material.dart';
 import '../services/authentication_service.dart';
-
-const _ink = Color(0xFF172D38);
-const _teal = Color(0xFF15766D);
-const _muted = Color(0xFF647681);
-const _background = Color(0xFFF3F6F7);
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -115,16 +111,16 @@ class _SignInScreenState extends State<SignInScreen> {
         isDense: true,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        prefixIcon: Icon(icon, color: _muted),
+        prefixIcon: Icon(icon, color: context.palette.muted),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: context.palette.surface,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFFD4DEE2))),
+            borderSide: BorderSide(color: context.palette.border)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: _teal, width: 2)),
+            borderSide: BorderSide(color: context.palette.accent, width: 2)),
         errorMaxLines: 3,
       );
 
@@ -174,7 +170,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       _hidePassword
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
-                      color: _muted)),
+                      color: context.palette.muted)),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) return 'Enter your password.';
@@ -206,7 +202,8 @@ class _SignInScreenState extends State<SignInScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: _signingIn ? null : () => _authenticate('reset'),
-                  style: TextButton.styleFrom(foregroundColor: _teal),
+                  style: TextButton.styleFrom(
+                      foregroundColor: context.palette.accent),
                   child: Text(_operation == 'reset'
                       ? 'Sending reset link…'
                       : 'Forgot password?'),
@@ -215,8 +212,8 @@ class _SignInScreenState extends State<SignInScreen> {
           FilledButton(
             onPressed: _signingIn ? null : () => _authenticate('email'),
             style: FilledButton.styleFrom(
-                backgroundColor: _teal,
-                foregroundColor: Colors.white,
+                backgroundColor: context.palette.accent,
+                foregroundColor: context.palette.onAccent,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14))),
@@ -240,19 +237,21 @@ class _SignInScreenState extends State<SignInScreen> {
                       _notice = null;
                       _hidePassword = true;
                     }),
-            style: TextButton.styleFrom(foregroundColor: _teal),
+            style:
+                TextButton.styleFrom(foregroundColor: context.palette.accent),
             child: Text(_creatingAccount
                 ? 'Already have an account? Sign in'
                 : 'New here? Create an account'),
           ),
-          const Padding(
-              padding: EdgeInsets.symmetric(vertical: 2),
+          Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(children: [
-                Expanded(child: Divider(color: Color(0xFFD4DEE2))),
+                Expanded(child: Divider(color: context.palette.border)),
                 Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 14),
-                    child: Text('or', style: TextStyle(color: _muted))),
-                Expanded(child: Divider(color: Color(0xFFD4DEE2))),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Text('or',
+                        style: TextStyle(color: context.palette.muted))),
+                Expanded(child: Divider(color: context.palette.border)),
               ])),
         ]),
       ));
@@ -262,34 +261,37 @@ class _SignInScreenState extends State<SignInScreen> {
       key: const ValueKey('welcome-banner'),
       width: double.infinity,
       padding: const EdgeInsets.all(22),
-      decoration:
-          BoxDecoration(color: _ink, borderRadius: BorderRadius.circular(22)),
-      child:
-          const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      decoration: BoxDecoration(
+          color: context.palette.banner,
+          borderRadius: BorderRadius.circular(22)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Icon(Icons.shield_outlined, color: Color(0xFF9EDBD0), size: 22),
-          SizedBox(width: 8),
+          Icon(Icons.shield_outlined,
+              color: context.palette.bannerAccent, size: 22),
+          const SizedBox(width: 8),
           Expanded(
               child: Text('A LITTLE PEACE OF MIND',
                   style: TextStyle(
-                      color: Color(0xFF9EDBD0),
+                      color: context.palette.bannerAccent,
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2))),
         ]),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text('Less to remember.\nMore road ahead.',
             style: TextStyle(
-                color: Colors.white,
+                color: context.palette.onBanner,
                 fontSize: 27,
                 height: 1.15,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5)),
         ...[
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           Text('Insurance · Inspections · Vignettes',
               style: TextStyle(
-                  color: Color(0xFFC3D0D6), fontSize: 12, height: 1.4)),
+                  color: context.palette.bannerMuted,
+                  fontSize: 12,
+                  height: 1.4)),
         ],
       ]),
     );
@@ -297,7 +299,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: _background,
+        backgroundColor: context.palette.background,
         body: SafeArea(
             child: Center(
                 child: ConstrainedBox(
@@ -324,8 +326,8 @@ class _SignInScreenState extends State<SignInScreen> {
                             _creatingAccount
                                 ? 'Create your account'
                                 : 'Welcome',
-                            style: const TextStyle(
-                                color: _ink,
+                            style: TextStyle(
+                                color: context.palette.ink,
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: -0.5)),
@@ -335,11 +337,11 @@ class _SignInScreenState extends State<SignInScreen> {
                             width: double.infinity,
                             child: OutlinedButton.icon(
                               style: OutlinedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: _ink,
-                                disabledBackgroundColor: Colors.white,
-                                side:
-                                    const BorderSide(color: Color(0xFFD4DEE2)),
+                                backgroundColor: context.palette.surface,
+                                foregroundColor: context.palette.ink,
+                                disabledBackgroundColor:
+                                    context.palette.surface,
+                                side: BorderSide(color: context.palette.border),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 20, vertical: 14),
                                 shape: RoundedRectangleBorder(
@@ -349,11 +351,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                   ? null
                                   : () => _authenticate('google'),
                               icon: _operation == 'google'
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       width: 22,
                                       height: 22,
                                       child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: _teal))
+                                          strokeWidth: 2,
+                                          color: context.palette.accent))
                                   : Image.asset(
                                       'assets/images/google_sign_in_logo.png',
                                       width: 22,
@@ -372,8 +375,9 @@ class _SignInScreenState extends State<SignInScreen> {
                             child: Semantics(
                                 liveRegion: true,
                                 child: Text(_notice!,
-                                    style: const TextStyle(
-                                        color: _teal, height: 1.5))),
+                                    style: TextStyle(
+                                        color: context.palette.accent,
+                                        height: 1.5))),
                           ),
                         if (_error != null)
                           Padding(
@@ -381,8 +385,8 @@ class _SignInScreenState extends State<SignInScreen> {
                             child: Semantics(
                                 liveRegion: true,
                                 child: Text(_error!,
-                                    style: const TextStyle(
-                                        color: Color(0xFFAD3939),
+                                    style: TextStyle(
+                                        color: context.palette.error,
                                         fontSize: 13,
                                         height: 1.5))),
                           ),

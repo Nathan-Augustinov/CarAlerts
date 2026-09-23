@@ -1,14 +1,12 @@
+import '../services/appearance_controller.dart';
+import '../widgets/appearance_setting.dart';
+import '../theme/app_theme.dart';
 import '../services/notifications_service.dart';
 import 'feedback_screen.dart';
 import 'package:car_alerts/services/authentication_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../services/notification_permission_service.dart';
-
-const _ink = Color(0xFF172D38);
-const _teal = Color(0xFF15766D);
-const _muted = Color(0xFF647681);
-const _background = Color(0xFFF3F6F7);
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -114,24 +112,27 @@ class _ProfileScreenState extends State<ProfileScreen>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-                color: _background, borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.notifications_none_outlined,
-                color: _teal, size: 22),
+                color: context.palette.background,
+                borderRadius: BorderRadius.circular(12)),
+            child: Icon(Icons.notifications_none_outlined,
+                color: context.palette.accent, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                const Text('Notifications',
+                Text('Notifications',
                     style: TextStyle(
-                        color: _ink,
+                        color: context.palette.ink,
                         fontSize: 15,
                         fontWeight: FontWeight.w700)),
                 const SizedBox(height: 5),
                 Text(label,
                     style: TextStyle(
-                        color: enabled ? _teal : _muted,
+                        color: enabled
+                            ? context.palette.accent
+                            : context.palette.muted,
                         fontSize: 12,
                         height: 1.5,
                         fontWeight: FontWeight.w600)),
@@ -142,8 +143,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                           (_permission == NotificationPermission.notRequested
                               ? 'Tap to allow expiry reminders.'
                               : 'Tap to enable in phone settings.'),
-                      style: const TextStyle(
-                          color: _muted, fontSize: 12, height: 1.5)),
+                      style: TextStyle(
+                          color: context.palette.muted,
+                          fontSize: 12,
+                          height: 1.5)),
                 ],
               ])),
           const SizedBox(width: 12),
@@ -152,15 +155,16 @@ class _ProfileScreenState extends State<ProfileScreen>
             width: 24,
             child: Center(
                 child: loading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: _teal))
+                            strokeWidth: 2, color: context.palette.accent))
                     : enabled
-                        ? const Icon(Icons.check_circle_outline,
-                            color: _teal, size: 22)
-                        : const Icon(Icons.chevron_right, color: _muted)),
+                        ? Icon(Icons.check_circle_outline,
+                            color: context.palette.accent, size: 22)
+                        : Icon(Icons.chevron_right,
+                            color: context.palette.muted)),
           ),
         ]),
       ),
@@ -188,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final user = FirebaseAuth.instance.currentUser;
     final name = user?.displayName?.trim();
     return Scaffold(
-      backgroundColor: _background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
           child: Center(
               child: ConstrainedBox(
@@ -196,58 +200,60 @@ class _ProfileScreenState extends State<ProfileScreen>
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
           children: [
-            const Text('MAKE IT YOURS',
+            Text('MAKE IT YOURS',
                 style: TextStyle(
-                    color: _teal,
+                    color: context.palette.accent,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 2)),
             const SizedBox(height: 10),
-            const Text('Settings',
+            Text('Settings',
                 style: TextStyle(
-                    color: _ink,
+                    color: context.palette.ink,
                     fontSize: 34,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -1)),
             const SizedBox(height: 6),
-            const Text('Your account and preferences, in one place.',
-                style: TextStyle(color: _muted, fontSize: 14)),
+            Text('Your account and preferences, in one place.',
+                style: TextStyle(color: context.palette.muted, fontSize: 14)),
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                  color: _ink, borderRadius: BorderRadius.circular(20)),
+                  color: context.palette.banner,
+                  borderRadius: BorderRadius.circular(20)),
               child:
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Container(
                   padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(
-                      color: const Color(0xFF29444D),
+                      color:
+                          context.palette.bannerAccent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(16)),
-                  child: const Icon(Icons.person_outline,
-                      color: Color(0xFF9EDBD0), size: 30),
+                  child: Icon(Icons.person_outline,
+                      color: context.palette.bannerAccent, size: 30),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      const Text('YOUR ACCOUNT',
+                      Text('YOUR ACCOUNT',
                           style: TextStyle(
-                              color: Color(0xFF9EDBD0),
+                              color: context.palette.bannerAccent,
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.5)),
                       const SizedBox(height: 8),
                       Text(name == null || name.isEmpty ? 'Your profile' : name,
-                          style: const TextStyle(
-                              color: Colors.white,
+                          style: TextStyle(
+                              color: context.palette.onBanner,
                               fontSize: 22,
                               fontWeight: FontWeight.w700)),
                       const SizedBox(height: 6),
                       Text(user?.email ?? 'No email available',
-                          style: const TextStyle(
-                              color: Color(0xFFC3D0D6),
+                          style: TextStyle(
+                              color: context.palette.bannerMuted,
                               fontSize: 13,
                               height: 1.5)),
                     ])),
@@ -255,15 +261,14 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             const SizedBox(height: 28),
             _heading(
-                'Preferences', 'Personal touches for your everyday drive.'),
+                'Preferences', 'Personal touches to make Car Alerts yours.'),
             _card([
-              _setting(Icons.palette_outlined, 'Appearance',
-                  'The app currently uses a light theme.'),
-              const Divider(
+              AppearanceSetting(controller: AppearanceController.instance),
+              Divider(
                   height: 1,
                   indent: 18,
                   endIndent: 18,
-                  color: Color(0xFFEAF0F2)),
+                  color: context.palette.divider),
               _notificationSetting(),
             ]),
             const SizedBox(height: 28),
@@ -272,16 +277,20 @@ class _ProfileScreenState extends State<ProfileScreen>
               ListTile(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                leading: const Icon(Icons.forum_outlined, color: _teal),
-                title: const Text('Share feedback',
+                leading:
+                    Icon(Icons.forum_outlined, color: context.palette.accent),
+                title: Text('Share feedback',
                     style: TextStyle(
-                        color: _ink,
+                        color: context.palette.ink,
                         fontSize: 15,
                         fontWeight: FontWeight.w700)),
-                subtitle: const Text(
-                    'Suggest an improvement or report a problem.',
-                    style: TextStyle(color: _muted, fontSize: 12, height: 1.5)),
-                trailing: const Icon(Icons.chevron_right, color: _muted),
+                subtitle: Text('Suggest an improvement or report a problem.',
+                    style: TextStyle(
+                        color: context.palette.muted,
+                        fontSize: 12,
+                        height: 1.5)),
+                trailing:
+                    Icon(Icons.chevron_right, color: context.palette.muted),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
                     builder: (_) => const FeedbackScreen())),
               ),
@@ -292,31 +301,34 @@ class _ProfileScreenState extends State<ProfileScreen>
               ListTile(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                leading: const Icon(Icons.logout, color: Color(0xFFAD3939)),
+                leading: Icon(Icons.logout, color: context.palette.error),
                 title: Text(_signingOut ? 'Signing out…' : 'Sign out',
-                    style: const TextStyle(
-                        color: Color(0xFFAD3939),
+                    style: TextStyle(
+                        color: context.palette.error,
                         fontSize: 15,
                         fontWeight: FontWeight.w700)),
-                subtitle: const Text('Your cars stay saved to your account.',
-                    style: TextStyle(color: _muted, fontSize: 12)),
+                subtitle: Text('Your cars stay saved to your account.',
+                    style:
+                        TextStyle(color: context.palette.muted, fontSize: 12)),
                 trailing: _signingOut
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: _teal))
-                    : const Icon(Icons.chevron_right, color: _muted, size: 20),
+                            strokeWidth: 2, color: context.palette.accent))
+                    : Icon(Icons.chevron_right,
+                        color: context.palette.muted, size: 20),
                 onTap: _signingOut ? null : _signOut,
               ),
             ]),
             const SizedBox(height: 32),
-            const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Icon(Icons.directions_car_outlined, color: _muted, size: 18),
-              SizedBox(width: 8),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.directions_car_outlined,
+                  color: context.palette.muted, size: 18),
+              const SizedBox(width: 8),
               Text('Car Alerts',
                   style: TextStyle(
-                      color: _muted,
+                      color: context.palette.muted,
                       fontWeight: FontWeight.w600,
                       fontSize: 12)),
             ]),
@@ -330,58 +342,23 @@ class _ProfileScreenState extends State<ProfileScreen>
         padding: const EdgeInsets.only(bottom: 14),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title,
-              style: const TextStyle(
-                  color: _ink, fontSize: 21, fontWeight: FontWeight.w700)),
+              style: TextStyle(
+                  color: context.palette.ink,
+                  fontSize: 21,
+                  fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Text(subtitle,
-              style: const TextStyle(color: _muted, fontSize: 13, height: 1.5)),
+              style: TextStyle(
+                  color: context.palette.muted, fontSize: 13, height: 1.5)),
         ]),
       );
 
   Widget _card(List<Widget> children) => Material(
-        color: Colors.white,
+        color: context.palette.surface,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
-            side: const BorderSide(color: Color(0xFFE0E7EA))),
+            side: BorderSide(color: context.palette.border)),
         child: Column(children: children),
-      );
-
-  Widget _setting(IconData icon, String title, String description) => Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                  color: _background, borderRadius: BorderRadius.circular(12)),
-              child: Icon(icon, color: _teal, size: 22)),
-          const SizedBox(width: 14),
-          Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(title,
-                    style: const TextStyle(
-                        color: _ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
-                const SizedBox(height: 5),
-                Text(description,
-                    style: const TextStyle(
-                        color: _muted, fontSize: 12, height: 1.5)),
-                const SizedBox(height: 10),
-                Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    decoration: BoxDecoration(
-                        color: _background,
-                        borderRadius: BorderRadius.circular(6)),
-                    child: const Text('Not available yet',
-                        style: TextStyle(
-                            color: _muted,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600))),
-              ])),
-        ]),
       );
 }
