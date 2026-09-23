@@ -1,3 +1,4 @@
+import '../services/notifications_service.dart';
 import 'package:car_alerts/screens/add_or_edit_car_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,6 +57,7 @@ class _CarsScreenState extends State<CarsScreen> {
     if (confirmed != true) return;
     try {
       await _collection.doc(car.name).delete();
+      await NotificationsService.instance.refresh();
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

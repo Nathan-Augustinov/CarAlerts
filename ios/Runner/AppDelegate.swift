@@ -8,6 +8,7 @@ import UserNotifications
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    UNUserNotificationCenter.current().delegate = self
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -29,6 +30,15 @@ import UserNotifications
         }
       }
       switch call.method {
+      case "timezone": result(TimeZone.current.identifier)
+      case "loadReminderIds": result(UserDefaults.standard.string(forKey: "reminder_ids") ?? "{}")
+      case "saveReminderIds":
+        UserDefaults.standard.set(call.arguments as? String, forKey: "reminder_ids")
+        result(nil)
+      case "loadReminderHistory": result(UserDefaults.standard.string(forKey: "reminder_history") ?? "{}")
+      case "saveReminderHistory":
+        UserDefaults.standard.set(call.arguments as? String, forKey: "reminder_history")
+        result(nil)
       case "status": reportStatus()
       case "request":
         center.requestAuthorization(options: [.alert, .badge, .sound]) { _, error in

@@ -1,3 +1,4 @@
+import 'notifications_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -53,5 +54,6 @@ class AuthenticationService {
       await _googleSignIn.signOut();
     }
     await _firebaseAuth.signOut();
+    await NotificationsService.instance.refresh();
   }
 }

@@ -1,3 +1,4 @@
+import '../services/notifications_service.dart';
 import 'package:car_alerts/services/authentication_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   final _permissionService = NotificationPermissionService();
   NotificationPermission? _permission;
+  ReminderStatus? scheduleStatus;
   bool _checkingPermission = true;
   bool _permissionAction = false;
   String? _permissionError;
@@ -46,9 +48,11 @@ class _ProfileScreenState extends State<ProfileScreen>
   Future<void> _refreshPermission() async {
     try {
       final permission = await _permissionService.status();
+      final schedule = await NotificationsService.instance.refresh();
       if (!mounted) return;
       setState(() {
         _permission = permission;
+        scheduleStatus = schedule;
         _checkingPermission = false;
         _permissionError = null;
       });
@@ -93,7 +97,9 @@ class _ProfileScreenState extends State<ProfileScreen>
         : _permissionError != null
             ? 'Status unavailable'
             : enabled
-                ? 'Enabled'
+                ? (scheduleStatus == ReminderStatus.failed
+                    ? 'Reminders will retry automatically'
+                    : 'Enabled')
                 : 'Not enabled';
     return InkWell(
       onTap: loading || enabled

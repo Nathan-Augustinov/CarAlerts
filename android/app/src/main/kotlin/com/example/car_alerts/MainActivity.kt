@@ -16,7 +16,13 @@ class MainActivity: FlutterActivity() {
     private val promptHistory by lazy { getSharedPreferences("notification_prompt", MODE_PRIVATE) }
 
     private fun permissionStatus(): String {
-        if (NotificationManagerCompat.from(this).areNotificationsEnabled()) return "enabled"
+        if (NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+            if (Build.VERSION.SDK_INT >= 26) {
+                val manager = getSystemService(android.app.NotificationManager::class.java)
+                if (manager.getNotificationChannel("1")?.importance == android.app.NotificationManager.IMPORTANCE_NONE) return "disabled"
+            }
+            return "enabled"
+        }
         if (Build.VERSION.SDK_INT >= 33 &&
             !promptHistory.getBoolean("asked", false)) return "notRequested"
         return "disabled"
@@ -27,6 +33,17 @@ class MainActivity: FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "car_alerts/notification_permissions")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "timezone" -> result.success(java.util.TimeZone.getDefault().id)
+                    "loadReminderIds" -> result.success(promptHistory.getString("reminder_ids", "{}"))
+                    "saveReminderIds" -> {
+                        if (promptHistory.edit().putString("reminder_ids", call.arguments as String).commit()) result.success(null)
+                        else result.error("storage_failed", "Could not persist reminder IDs", null)
+                    }
+                    "loadReminderHistory" -> result.success(promptHistory.getString("reminder_history", "{}"))
+                    "saveReminderHistory" -> {
+                        if (promptHistory.edit().putString("reminder_history", call.arguments as String).commit()) result.success(null)
+                        else result.error("storage_failed", "Could not persist reminder history", null)
+                    }
                     "status" -> result.success(permissionStatus())
                     "request" -> {
                         if (permissionStatus() != "notRequested" || Build.VERSION.SDK_INT < 33) {
