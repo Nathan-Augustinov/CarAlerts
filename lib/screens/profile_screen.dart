@@ -1,3 +1,5 @@
+import 'delete_account_screen.dart';
+import '../services/account_deletion_service.dart';
 import '../services/appearance_controller.dart';
 import '../widgets/appearance_setting.dart';
 import '../theme/app_theme.dart';
@@ -319,6 +321,42 @@ class _ProfileScreenState extends State<ProfileScreen>
                     : Icon(Icons.chevron_right,
                         color: context.palette.muted, size: 20),
                 onTap: _signingOut ? null : _signOut,
+              ),
+            ]),
+            const SizedBox(height: 28),
+            _heading('Delete account',
+                'Permanently remove your account and saved data.'),
+            _card([
+              ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                leading: Icon(Icons.person_remove_outlined,
+                    color: context.palette.error),
+                title: Text('Delete account',
+                    style: TextStyle(
+                        color: context.palette.error,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700)),
+                subtitle: Text('This action cannot be undone.',
+                    style:
+                        TextStyle(color: context.palette.muted, fontSize: 12)),
+                trailing:
+                    Icon(Icons.chevron_right, color: context.palette.muted),
+                onTap: _signingOut || user == null
+                    ? null
+                    : () {
+                        final service = AccountDeletionService();
+                        Navigator.of(context).push(MaterialPageRoute<void>(
+                          builder: (_) => DeleteAccountScreen(
+                            email: user.email,
+                            requiresPassword: user.providerData.any(
+                                (provider) =>
+                                    provider.providerId == 'password'),
+                            onDelete: (password) =>
+                                service.delete(password: password),
+                          ),
+                        ));
+                      },
               ),
             ]),
             const SizedBox(height: 32),

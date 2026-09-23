@@ -42,6 +42,34 @@ class AuthenticationService {
     return result.user;
   }
 
+  Future<void> reauthenticateForDeletion(User user, String? password) async {
+    final providers = user.providerData.map((provider) => provider.providerId);
+    final AuthCredential credential;
+    if (providers.contains('password') && user.email != null) {
+      if (password == null || password.isEmpty) {
+        throw FirebaseAuthException(code: 'missing-password');
+      }
+      credential =
+          EmailAuthProvider.credential(email: user.email!, password: password);
+    } else if (providers.contains('google.com')) {
+      await _googleInitialization;
+      final account = await _googleSignIn.authenticate();
+      credential = GoogleAuthProvider.credential(
+          idToken: account.authentication.idToken);
+    } else {
+      throw FirebaseAuthException(code: 'unsupported-provider');
+    }
+    // Reauthenticate the existing user; never sign into a different Google
+    // account as a side effect of confirming deletion.
+    await user.reauthenticateWithCredential(credential);
+    await user.getIdToken(true);
+  }
+
+  Future<void> clearGoogleSession() async {
+    await _googleInitialization;
+    await _googleSignIn.signOut();
+  }
+
   Future<void> resetPassword(String email) =>
       _firebaseAuth.sendPasswordResetEmail(email: email.trim());
 

@@ -110,15 +110,27 @@ class ReminderCoordinator {
   ReminderCoordinator(this.backend, {DateTime Function()? now})
       : now = now ?? DateTime.now;
 
+  /// Runs account cleanup after any in-flight scheduling and before the next
+  /// refresh, so a stale scheduling operation cannot recreate deleted alerts.
+  Future<T> exclusive<T>(Future<T> Function() action) {
+    final result = _tail.then((_) => action());
+    _tail = result.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    return result;
+  }
+
   Future<ReminderStatus> refresh(
-      {String? savedUser, String? savedCar, Map<String, dynamic>? savedDates}) {
-    final result = _tail.then((_) => _refresh(savedUser, savedCar, savedDates));
+      {String? savedUser,
+      String? savedCar,
+      String? renamedFrom,
+      Map<String, dynamic>? savedDates}) {
+    final result = _tail
+        .then((_) => _refresh(savedUser, savedCar, renamedFrom, savedDates));
     _tail = result.then((_) {});
     return result;
   }
 
   Future<ReminderStatus> _refresh(String? savedUser, String? savedCar,
-      Map<String, dynamic>? savedDates) async {
+      String? renamedFrom, Map<String, dynamic>? savedDates) async {
     try {
       await backend.initialize();
       final user = backend.user;
@@ -141,6 +153,25 @@ class ReminderCoordinator {
       if (user == null) {
         await backend.saveHistory(history);
         return ReminderStatus.ready;
+      }
+      if (savedUser == user &&
+          savedCar != null &&
+          renamedFrom != null &&
+          renamedFrom != savedCar) {
+        // A rename is the same car: preserve catch-up deduplication so editing
+        // its registration cannot replay a reminder that has already fired.
+        for (final entry in history.entries.toList()) {
+          final key = jsonDecode(entry.key) as List;
+          if (key[0] == user && key[1] == renamedFrom) {
+            key[1] = savedCar;
+            final renamedKey = jsonEncode(key);
+            if (history[renamedKey] == null ||
+                history[renamedKey] == 'queued') {
+              history[renamedKey] = entry.value;
+            }
+            history.remove(entry.key);
+          }
+        }
       }
       final zone = await backend.timezone();
       if (savedUser == user && savedCar != null && savedDates != null) {

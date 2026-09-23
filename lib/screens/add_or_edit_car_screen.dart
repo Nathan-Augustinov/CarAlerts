@@ -4,7 +4,7 @@ import 'package:car_alerts/main.dart';
 import 'package:car_alerts/models/car.dart';
 import 'package:car_alerts/services/notifications_service.dart';
 import 'package:car_alerts/services/notification_permission_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/car_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -21,6 +21,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _carNameController = TextEditingController();
   String carName = '';
+  bool _saving = false;
   bool isInsuranceSelected = false;
   bool isInspectionSelected = false;
   bool isRomanianVignetteSelected = false;
@@ -141,6 +142,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                       decoration: _cardDecoration,
                       child: TextFormField(
                         controller: _carNameController,
+                        enabled: !_saving,
                         textCapitalization: TextCapitalization.characters,
                         style: TextStyle(
                             color: context.palette.ink,
@@ -247,10 +249,14 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                               vertical: 18, horizontal: 24),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14))),
-                      onPressed: _saveCar,
+                      onPressed: _saving ? null : _saveCar,
                       icon: const Icon(Icons.check, size: 20),
                       label: Text(
-                          widget.car == null ? 'Save car' : 'Save changes',
+                          _saving
+                              ? 'Saving…'
+                              : widget.car == null
+                                  ? 'Save car'
+                                  : 'Save changes',
                           style: const TextStyle(fontWeight: FontWeight.w700)),
                     ),
                   ],
@@ -299,7 +305,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
             subtitle: Text(subtitle,
                 style: TextStyle(color: context.palette.muted, fontSize: 12)),
             value: selected,
-            onChanged: onChanged,
+            onChanged: _saving ? null : onChanged,
           ),
           if (selected)
             Padding(
@@ -317,26 +323,29 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                         borderRadius: BorderRadius.circular(12),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          onTap: () async {
-                            final now = DateTime.now();
-                            final initial = date ?? now;
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: initial,
-                              firstDate: DateTime(
-                                  initial.year < 2021 ? initial.year : 2021),
-                              lastDate: DateTime(
-                                  initial.year > now.year + 15
-                                      ? initial.year
-                                      : now.year + 15,
-                                  12,
-                                  31),
-                              helpText: '$title expiry',
-                            );
-                            if (picked != null && mounted) {
-                              onDateSelected(picked);
-                            }
-                          },
+                          onTap: _saving
+                              ? null
+                              : () async {
+                                  final now = DateTime.now();
+                                  final initial = date ?? now;
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: initial,
+                                    firstDate: DateTime(initial.year < 2021
+                                        ? initial.year
+                                        : 2021),
+                                    lastDate: DateTime(
+                                        initial.year > now.year + 15
+                                            ? initial.year
+                                            : now.year + 15,
+                                        12,
+                                        31),
+                                    helpText: '$title expiry',
+                                  );
+                                  if (picked != null && mounted) {
+                                    onDateSelected(picked);
+                                  }
+                                },
                           child: Padding(
                               padding: const EdgeInsets.all(14),
                               child: Row(children: [
@@ -385,23 +394,13 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   }
 
   Future<void> _saveCar() async {
+    if (_saving) return;
     if (_formKey.currentState!.validate()) {
       carName = _carNameController.text.trim();
 
       if (carName.isEmpty) {
         _showErrorPopUp("Please enter the registration number!", errorText);
         return;
-      }
-
-      if (widget.car == null) {
-        bool nameUsed = await _carNameAlreadyUsed(carName);
-        if (!mounted) return;
-        if (nameUsed) {
-          _showErrorPopUp(
-              "You already have a car with this name or identification number saved!",
-              errorText);
-          return;
-        }
       }
 
       if (isInsuranceSelected && insuranceExpiringDate == null) {
@@ -430,7 +429,12 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
             "Please select the austrian vignette expiration date!", errorText);
         return;
       }
-      await _addCarToDatabase();
+      setState(() => _saving = true);
+      try {
+        await _addCarToDatabase();
+      } finally {
+        if (mounted) setState(() => _saving = false);
+      }
     }
   }
 
@@ -453,12 +457,15 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
     };
 
     try {
-      await FirebaseFirestore.instance
-          .collection('cars')
-          .doc(currentUserId)
-          .collection('user_cars')
-          .doc(carName)
-          .set(carData);
+      await CarService().save(
+        userId: currentUserId,
+        registration: carName,
+        previousRegistration: widget.car?.name,
+        dates: carData,
+      );
+    } on CarSaveException catch (error) {
+      if (mounted) _showErrorPopUp(error.message, errorText);
+      return;
     } catch (_) {
       if (mounted) {
         _showErrorPopUp(
@@ -476,7 +483,10 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
       // Permission errors must not prevent reconciliation or undo the save.
     }
     final result = await NotificationsService.instance.refresh(
-        savedUser: currentUserId, savedCar: carName, savedDates: carData);
+        savedUser: currentUserId,
+        savedCar: carName,
+        renamedFrom: widget.car?.name,
+        savedDates: carData);
     notificationsOff = result == ReminderStatus.disabled;
     if (result == ReminderStatus.failed) {
       reminderWarning = 'Car saved. Reminders will retry automatically.';
@@ -527,24 +537,6 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
             ],
           );
         });
-  }
-
-  Future<bool> _carNameAlreadyUsed(String carName) async {
-    bool result = false;
-    try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection('cars')
-          .doc(currentUserId)
-          .collection('user_cars')
-          .doc(carName)
-          .get();
-      if (snapshot.exists) {
-        result = true;
-      }
-    } catch (error) {
-      _showErrorPopUp("Error in querying the database: $error", errorText);
-    }
-    return result;
   }
 
   void _loadCarDetails() {
