@@ -239,21 +239,14 @@ int? _days(String value) {
 }
 
 int _priority(Car car) {
-  final days = car.items.values.map(_days).whereType<int>().toList()..sort();
+  final days = car.allItems.values.map(_days).whereType<int>().toList()..sort();
   return days.isEmpty ? 999999 : days.first;
 }
 
-bool _needsAttention(Car car) => car.items.values.any((value) {
+bool _needsAttention(Car car) => car.allItems.values.any((value) {
       final days = _days(value);
       return days != null && days <= 30;
     });
-
-String _label(String key) {
-  final label = key.replaceAll('_date', '').replaceAll('_', ' ');
-  return label.isEmpty
-      ? 'Document'
-      : '${label[0].toUpperCase()}${label.substring(1)}';
-}
 
 class _CarCard extends StatelessWidget {
   const _CarCard(
@@ -264,7 +257,7 @@ class _CarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = car.items.entries.toList()
+    final entries = car.allItems.entries.toList()
       ..sort((a, b) =>
           (_days(a.value) ?? 999999).compareTo(_days(b.value) ?? 999999));
     return Container(
@@ -333,7 +326,7 @@ class _CarCard extends StatelessWidget {
               final title = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_label(entry.key),
+                    Text(car.itemLabel(entry.key),
                         style: TextStyle(
                             color: context.palette.ink,
                             fontSize: 14,

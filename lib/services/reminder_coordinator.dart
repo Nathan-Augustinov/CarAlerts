@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../models/car.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 const expiryLabels = {
@@ -13,9 +14,11 @@ enum ReminderStatus { ready, disabled, failed }
 
 class Reminder {
   final String user, car, category;
+  final String? label;
   final int advance;
   final tz.TZDateTime date;
-  Reminder(this.user, this.car, this.category, this.advance, this.date);
+  Reminder(this.user, this.car, this.category, this.advance, this.date,
+      {this.label});
   String get key => jsonEncode([user, car, category, advance]);
   String get occurrenceKey => jsonEncode([
         user,
@@ -26,7 +29,7 @@ class Reminder {
             .split('T')
             .first
       ]);
-  String get title => '$car · ${expiryLabels[category]}';
+  String get title => '$car · ${label ?? expiryLabels[category]}';
   String get body =>
       advance == 1 ? 'Expires tomorrow.' : 'Expires in $advance days.';
   String get payload => jsonEncode({
@@ -35,7 +38,8 @@ class Reminder {
         'car': car,
         'key': key,
         'time': date.millisecondsSinceEpoch,
-        'zone': date.location.name
+        'zone': date.location.name,
+        'title': title
       });
 }
 
@@ -44,16 +48,20 @@ List<Reminder> planReminders(String user,
     {int? limit}) {
   final result = <Reminder>[];
   for (final car in cars.entries) {
-    for (final category in expiryLabels.keys) {
-      final value = car.value[category];
+    final model = Car.fromMap(car.value, car.key);
+    for (final category in model.allItems.keys) {
+      final value = model.allItems[category];
       if (value == null) continue;
       // Stored expiry values represent calendar dates, never UTC instants.
-      final date = DateTime.parse((value as String).split('T').first);
+      final date = DateTime.parse(value.split('T').first);
       for (final advance in [30, 7, 1]) {
         final delivery =
             tz.TZDateTime(zone, date.year, date.month, date.day - advance, 9);
         if (delivery.isAfter(now)) {
-          result.add(Reminder(user, car.key, category, advance, delivery));
+          result.add(Reminder(user, car.key, category, advance, delivery,
+              label: category.startsWith('custom:')
+                  ? model.itemLabel(category)
+                  : null));
         }
       }
     }
@@ -71,14 +79,18 @@ List<Reminder> lateReminders(String user, String car,
   final localNow = tz.TZDateTime.from(now, zone);
   final tomorrow = DateTime(localNow.year, localNow.month, localNow.day + 1);
   final result = <Reminder>[];
-  for (final category in expiryLabels.keys) {
-    final value = dates[category];
+  final model = Car.fromMap(dates, car);
+  for (final category in model.allItems.keys) {
+    final value = model.allItems[category];
     if (value == null) continue;
-    final expiry = DateTime.parse((value as String).split('T').first);
+    final expiry = DateTime.parse(value.split('T').first);
     final delivery =
         tz.TZDateTime(zone, expiry.year, expiry.month, expiry.day - 1, 9);
     if (expiry == tomorrow && !delivery.isAfter(now)) {
-      result.add(Reminder(user, car, category, 1, delivery));
+      result.add(Reminder(user, car, category, 1, delivery,
+          label: category.startsWith('custom:')
+              ? model.itemLabel(category)
+              : null));
     }
   }
   return result;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Continues the native launch branding while authentication is restored.
@@ -6,18 +7,22 @@ class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context) =>
-      const AnnotatedRegion<SystemUiOverlayStyle>(
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: Scaffold(
-          backgroundColor: Color(0xFF172D38),
+          backgroundColor: const Color(0xFF172D38),
           body: Stack(children: [
             Center(
                 child: Image(
-                    image: AssetImage('assets/images/splash_mark.png'),
-                    width: 288,
-                    height: 288)),
-            Positioned.fill(
+                    image: const AssetImage('assets/images/splash_mark.png'),
+                    width: defaultTargetPlatform == TargetPlatform.android
+                        ? 200
+                        : 288,
+                    height: defaultTargetPlatform == TargetPlatform.android
+                        ? 200
+                        : 288,
+                    filterQuality: FilterQuality.high)),
+            const Positioned.fill(
                 child: SafeArea(
                     child: Column(children: [
               Spacer(),
