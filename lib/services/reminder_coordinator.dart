@@ -53,7 +53,8 @@ List<Reminder> planReminders(String user,
       final value = model.allItems[category];
       if (value == null) continue;
       // Stored expiry values represent calendar dates, never UTC instants.
-      final date = DateTime.parse(value.split('T').first);
+      final date = DateTime.tryParse(value.split('T').first);
+      if (date == null) continue;
       for (final advance in [30, 7, 1]) {
         final delivery =
             tz.TZDateTime(zone, date.year, date.month, date.day - advance, 9);
@@ -83,7 +84,8 @@ List<Reminder> lateReminders(String user, String car,
   for (final category in model.allItems.keys) {
     final value = model.allItems[category];
     if (value == null) continue;
-    final expiry = DateTime.parse(value.split('T').first);
+    final expiry = DateTime.tryParse(value.split('T').first);
+    if (expiry == null) continue;
     final delivery =
         tz.TZDateTime(zone, expiry.year, expiry.month, expiry.day - 1, 9);
     if (expiry == tomorrow && !delivery.isAfter(now)) {

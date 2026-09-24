@@ -1,3 +1,4 @@
+import '../widgets/calendar_day_refresh.dart';
 import '../theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +16,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with WidgetsBindingObserver, CalendarDayRefresh<MyHomePage> {
   _DeadlineFilter _filter = _DeadlineFilter.attention;
   late Stream<QuerySnapshot<Map<String, dynamic>>> _stream;
 

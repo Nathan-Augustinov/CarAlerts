@@ -1,3 +1,4 @@
+import '../widgets/calendar_day_refresh.dart';
 import '../theme/app_theme.dart';
 import '../services/notifications_service.dart';
 import 'package:car_alerts/screens/add_or_edit_car_screen.dart';
@@ -15,7 +16,8 @@ class CarsScreen extends StatefulWidget {
   State<CarsScreen> createState() => _CarsScreenState();
 }
 
-class _CarsScreenState extends State<CarsScreen> {
+class _CarsScreenState extends State<CarsScreen>
+    with WidgetsBindingObserver, CalendarDayRefresh<CarsScreen> {
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   _Filter _filter = _Filter.all;
 

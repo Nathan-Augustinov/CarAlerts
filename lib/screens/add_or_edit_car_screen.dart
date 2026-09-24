@@ -590,17 +590,28 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
     };
 
     try {
-      await CarService().save(
+      carData = await CarService().save(
         userId: currentUserId,
         registration: carName,
         previousRegistration: widget.car?.name,
+        originalDates: widget.car == null
+            ? null
+            : {
+                for (final key
+                    in carData.keys.where((key) => key != 'custom_expiries'))
+                  key: DateTime.tryParse(widget.car!.items[key] ?? '')
+                          ?.toIso8601String() ??
+                      widget.car!.items[key],
+                'custom_expiries': widget.car!.customExpiries,
+              },
         dates: carData,
       );
     } on CarSaveException catch (error) {
       if (mounted) _showErrorPopUp(error.message, errorText);
       return;
     } on FirebaseException catch (error, stack) {
-      debugPrint('Car save failed [${error.plugin}/${error.code}]: ${error.message}');
+      debugPrint(
+          'Car save failed [${error.plugin}/${error.code}]: ${error.message}');
       debugPrintStack(stackTrace: stack);
       if (mounted) {
         _showErrorPopUp(

@@ -12,11 +12,12 @@ class CarService {
       : _firestore = firestore ?? FirebaseFirestore.instance;
   final FirebaseFirestore _firestore;
 
-  Future<void> save({
+  Future<Map<String, dynamic>> save({
     required String userId,
     required String registration,
     required Map<String, dynamic> dates,
     String? previousRegistration,
+    Map<String, dynamic>? originalDates,
   }) async {
     final name = registration.trim();
     if (name.isEmpty || name.contains('/') || name == '.' || name == '..') {
@@ -27,7 +28,7 @@ class CarService {
     final destination = cars.doc(name);
     // Checking and writing in the same transaction also protects against
     // another device creating the destination while this form is open.
-    await _firestore.runTransaction((transaction) async {
+    return _firestore.runTransaction((transaction) async {
       final target = await transaction.get(destination);
       if (previousRegistration != name && target.exists) {
         throw const CarSaveException(
@@ -44,7 +45,9 @@ class CarService {
         }
         existing = original.data()!;
       }
-      final updated = {...existing, ...dates};
+      final updated = originalDates == null
+          ? {...existing, ...dates}
+          : _applyChanges(existing, originalDates, dates);
       final custom = updated['custom_expiries'];
       if (custom is Map) {
         if (custom.length > 10) {
@@ -70,6 +73,7 @@ class CarService {
       }
       final original = Car.fromMap(existing, name).allItems;
       for (final entry in Car.fromMap(updated, name).allItems.entries) {
+        if (entry.value == original[entry.key]) continue;
         final error = validateExpiryDate(DateTime.tryParse(entry.value),
             original: original[entry.key]);
         if (error != null) throw CarSaveException(error);
@@ -78,6 +82,37 @@ class CarService {
       if (previousRegistration != null && previousRegistration != name) {
         transaction.delete(cars.doc(previousRegistration));
       }
+      return updated;
     });
   }
+}
+
+/// Apply only the editor's changes to the latest transaction snapshot.
+/// Recurse into custom expiries so independent entries and fields survive.
+Map<String, dynamic> _applyChanges(Map<String, dynamic> latest,
+    Map<String, dynamic> original, Map<String, dynamic> edited) {
+  final result = Map<String, dynamic>.from(latest);
+  for (final key in {...original.keys, ...edited.keys}) {
+    final before = original[key];
+    final after = edited[key];
+    if (before is Map && after is Map) {
+      result[key] = _applyChanges(
+          latest[key] is Map
+              ? Map<String, dynamic>.from(latest[key] as Map)
+              : {},
+          Map<String, dynamic>.from(before),
+          Map<String, dynamic>.from(after));
+      // An unchanged entry deleted on another device must stay deleted.
+      if (!latest.containsKey(key) && (result[key] as Map).isEmpty) {
+        result.remove(key);
+      }
+    } else if (before != after) {
+      if (edited.containsKey(key)) {
+        result[key] = after;
+      } else {
+        result.remove(key);
+      }
+    }
+  }
+  return result;
 }
