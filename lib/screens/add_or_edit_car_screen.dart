@@ -1,15 +1,12 @@
+import '../theme/app_theme.dart';
 import 'dart:async';
 import 'package:car_alerts/main.dart';
 import 'package:car_alerts/models/car.dart';
 import 'package:car_alerts/services/notifications_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:car_alerts/services/notification_permission_service.dart';
+import '../services/car_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-const _ink = Color(0xFF172D38);
-const _teal = Color(0xFF15766D);
-const _muted = Color(0xFF647681);
-const _background = Color(0xFFF3F6F7);
 
 class AddOrEditCarScreen extends StatefulWidget {
   final Car? car;
@@ -23,8 +20,8 @@ class AddOrEditCarScreen extends StatefulWidget {
 class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _carNameController = TextEditingController();
-  final NotificationsService _notificationService = NotificationsService();
   String carName = '';
+  bool _saving = false;
   bool isInsuranceSelected = false;
   bool isInspectionSelected = false;
   bool isRomanianVignetteSelected = false;
@@ -44,7 +41,6 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   @override
   void initState() {
     super.initState();
-    _notificationService.localNotificationsInitialization();
     if (widget.car != null) {
       _loadCarDetails();
     }
@@ -65,39 +61,36 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
       isHungarianVignetteSelected,
       isAustrianVignetteSelected
     ].where((value) => value).length;
-    return Theme(
-      data: Theme.of(context).copyWith(
-        colorScheme: ColorScheme.fromSeed(seedColor: _teal),
-        scaffoldBackgroundColor: _background,
+    return Scaffold(
+      backgroundColor: context.palette.background,
+      appBar: AppBar(
+        backgroundColor: context.palette.background,
+        foregroundColor: context.palette.ink,
+        surfaceTintColor: Colors.transparent,
+        title: Text('YOUR GARAGE',
+            style: TextStyle(
+                color: context.palette.accent,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 2)),
       ),
-      child: Scaffold(
-        backgroundColor: _background,
-        appBar: AppBar(
-          backgroundColor: _background,
-          foregroundColor: _ink,
-          surfaceTintColor: Colors.transparent,
-          title: const Text('YOUR GARAGE',
-              style: TextStyle(
-                  color: _teal,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 2)),
-        ),
-        body: SafeArea(
-            top: false,
-            child: Center(
-                child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+      body: SafeArea(
+          top: false,
+          child: Center(
+              child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(widget.car == null ? 'Add a car' : 'Edit car',
-                        style: const TextStyle(
-                            color: _ink,
+                        style: TextStyle(
+                            color: context.palette.ink,
                             fontSize: 34,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -1)),
@@ -106,39 +99,41 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                         widget.car == null
                             ? 'A few details now. Fewer surprises later.'
                             : 'Keep your car’s details and deadlines up to date.',
-                        style: const TextStyle(color: _muted, fontSize: 14)),
+                        style: TextStyle(
+                            color: context.palette.muted, fontSize: 14)),
                     const SizedBox(height: 24),
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                          color: _ink, borderRadius: BorderRadius.circular(20)),
+                          color: context.palette.banner,
+                          borderRadius: BorderRadius.circular(20)),
                       child: Row(children: [
-                        const Icon(Icons.directions_car_outlined,
-                            color: Color(0xFF9EDBD0), size: 32),
+                        Icon(Icons.directions_car_outlined,
+                            color: context.palette.bannerAccent, size: 32),
                         const SizedBox(width: 16),
                         Expanded(
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                              const Text('Your car, covered',
+                              Text('Your car, covered',
                                   style: TextStyle(
-                                      color: Colors.white,
+                                      color: context.palette.onBanner,
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700)),
                               const SizedBox(height: 5),
                               Text(
                                   '$selected ${selected == 1 ? 'document selected' : 'documents selected'} for expiry tracking',
-                                  style: const TextStyle(
-                                      color: Color(0xFFC3D0D6),
+                                  style: TextStyle(
+                                      color: context.palette.bannerMuted,
                                       fontSize: 12,
                                       height: 1.5)),
                             ])),
                       ]),
                     ),
                     const SizedBox(height: 28),
-                    const Text('Car details',
+                    Text('Car details',
                         style: TextStyle(
-                            color: _ink,
+                            color: context.palette.ink,
                             fontSize: 21,
                             fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
@@ -147,9 +142,10 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                       decoration: _cardDecoration,
                       child: TextFormField(
                         controller: _carNameController,
+                        enabled: !_saving,
                         textCapitalization: TextCapitalization.characters,
-                        style: const TextStyle(
-                            color: _ink,
+                        style: TextStyle(
+                            color: context.palette.ink,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1),
                         decoration: InputDecoration(
@@ -159,7 +155,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                           helperMaxLines: 2,
                           prefixIcon: const Icon(Icons.directions_car_outlined),
                           filled: true,
-                          fillColor: _background,
+                          fillColor: context.palette.background,
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
@@ -169,20 +165,20 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                             : value.contains('/')
                                 ? 'Use a registration number without slashes.'
                                 : null,
-                        onSaved: (value) => carName = value!.trim(),
                       ),
                     ),
                     const SizedBox(height: 28),
-                    const Text('Documents & expiry dates',
+                    Text('Documents & expiry dates',
                         style: TextStyle(
-                            color: _ink,
+                            color: context.palette.ink,
                             fontSize: 21,
                             fontWeight: FontWeight.w700)),
                     const SizedBox(height: 6),
-                    const Text(
-                        'Choose what to track, then add each expiry date.',
+                    Text('Choose what to track, then add each expiry date.',
                         style: TextStyle(
-                            color: _muted, fontSize: 13, height: 1.5)),
+                            color: context.palette.muted,
+                            fontSize: 13,
+                            height: 1.5)),
                     const SizedBox(height: 16),
                     _document(
                         'Car insurance',
@@ -201,11 +197,11 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                         (value) => setState(() => isInspectionSelected = value),
                         (date) =>
                             setState(() => inspectionExpiringDate = date)),
-                    const Padding(
-                        padding: EdgeInsets.only(top: 12, bottom: 12),
+                    Padding(
+                        padding: const EdgeInsets.only(top: 12, bottom: 12),
                         child: Text('ROAD VIGNETTES',
                             style: TextStyle(
-                                color: _muted,
+                                color: context.palette.muted,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 1.5))),
@@ -240,36 +236,41 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                         (date) => setState(
                             () => austrianVignetteExpiringDate = date)),
                     const SizedBox(height: 12),
-                    const Text('You can add or update documents at any time.',
+                    Text('You can add or update documents at any time.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: _muted, fontSize: 12)),
+                        style: TextStyle(
+                            color: context.palette.muted, fontSize: 12)),
                     const SizedBox(height: 24),
                     FilledButton.icon(
                       style: FilledButton.styleFrom(
-                          backgroundColor: _teal,
-                          foregroundColor: Colors.white,
+                          backgroundColor: context.palette.accent,
+                          foregroundColor: context.palette.onAccent,
                           padding: const EdgeInsets.symmetric(
                               vertical: 18, horizontal: 24),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14))),
-                      onPressed: _saveCar,
+                      onPressed: _saving ? null : _saveCar,
                       icon: const Icon(Icons.check, size: 20),
                       label: Text(
-                          widget.car == null ? 'Save car' : 'Save changes',
+                          _saving
+                              ? 'Saving…'
+                              : widget.car == null
+                                  ? 'Save car'
+                                  : 'Save changes',
                           style: const TextStyle(fontWeight: FontWeight.w700)),
                     ),
                   ],
                 ),
               ),
-            ))),
-      ),
+            ),
+          ))),
     );
   }
 
   BoxDecoration get _cardDecoration => BoxDecoration(
-      color: Colors.white,
+      color: context.palette.surface,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFFE0E7EA)));
+      border: Border.all(color: context.palette.border));
 
   Widget _document(
       String title,
@@ -282,25 +283,29 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
-        color: Colors.white,
+        color: context.palette.surface,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: Color(0xFFE0E7EA)),
+          side: BorderSide(color: context.palette.border),
         ),
         child: Column(children: [
           SwitchListTile.adaptive(
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-            activeTrackColor: _teal,
-            secondary: Icon(icon, color: selected ? _teal : _muted),
+            activeTrackColor: context.palette.accent,
+            secondary: Icon(icon,
+                color:
+                    selected ? context.palette.accent : context.palette.muted),
             title: Text(title,
-                style: const TextStyle(
-                    color: _ink, fontSize: 15, fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    color: context.palette.ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700)),
             subtitle: Text(subtitle,
-                style: const TextStyle(color: _muted, fontSize: 12)),
+                style: TextStyle(color: context.palette.muted, fontSize: 12)),
             value: selected,
-            onChanged: onChanged,
+            onChanged: _saving ? null : onChanged,
           ),
           if (selected)
             Padding(
@@ -314,49 +319,47 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Material(
-                        color: _background,
+                        color: context.palette.background,
                         borderRadius: BorderRadius.circular(12),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          onTap: () async {
-                            final now = DateTime.now();
-                            final initial = date ?? now;
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: initial,
-                              firstDate: DateTime(
-                                  initial.year < 2021 ? initial.year : 2021),
-                              lastDate: DateTime(
-                                  initial.year > now.year + 15
-                                      ? initial.year
-                                      : now.year + 15,
-                                  12,
-                                  31),
-                              helpText: '$title expiry',
-                              builder: (context, child) => Theme(
-                                  data: Theme.of(context).copyWith(
-                                      colorScheme: ColorScheme.fromSeed(
-                                          seedColor: _teal)),
-                                  child: child!),
-                            );
-                            if (picked != null && mounted) {
-                              onDateSelected(picked);
-                            }
-                          },
+                          onTap: _saving
+                              ? null
+                              : () async {
+                                  final now = DateTime.now();
+                                  final initial = date ?? now;
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: initial,
+                                    firstDate: DateTime(initial.year < 2021
+                                        ? initial.year
+                                        : 2021),
+                                    lastDate: DateTime(
+                                        initial.year > now.year + 15
+                                            ? initial.year
+                                            : now.year + 15,
+                                        12,
+                                        31),
+                                    helpText: '$title expiry',
+                                  );
+                                  if (picked != null && mounted) {
+                                    onDateSelected(picked);
+                                  }
+                                },
                           child: Padding(
                               padding: const EdgeInsets.all(14),
                               child: Row(children: [
-                                const Icon(Icons.calendar_today_outlined,
-                                    color: _teal, size: 20),
+                                Icon(Icons.calendar_today_outlined,
+                                    color: context.palette.accent, size: 20),
                                 const SizedBox(width: 12),
                                 Expanded(
                                     child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                      const Text('EXPIRY DATE',
+                                      Text('EXPIRY DATE',
                                           style: TextStyle(
-                                              color: _muted,
+                                              color: context.palette.muted,
                                               fontSize: 10,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1)),
@@ -366,12 +369,12 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                                               ? 'Choose a date'
                                               : Car.extractDate(
                                                   date.toIso8601String()),
-                                          style: const TextStyle(
-                                              color: _ink,
+                                          style: TextStyle(
+                                              color: context.palette.ink,
                                               fontWeight: FontWeight.w600)),
                                     ])),
-                                const Icon(Icons.chevron_right,
-                                    color: _muted, size: 20),
+                                Icon(Icons.chevron_right,
+                                    color: context.palette.muted, size: 20),
                               ])),
                         ),
                       ),
@@ -379,8 +382,9 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                         Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(field.errorText!,
-                                style: const TextStyle(
-                                    color: Color(0xFFAD3939), fontSize: 12))),
+                                style: TextStyle(
+                                    color: context.palette.error,
+                                    fontSize: 12))),
                     ]),
               ),
             ),
@@ -390,22 +394,13 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   }
 
   Future<void> _saveCar() async {
+    if (_saving) return;
     if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
+      carName = _carNameController.text.trim();
 
       if (carName.isEmpty) {
-        _showErrorPopUp("Please enter the car name!", errorText);
+        _showErrorPopUp("Please enter the registration number!", errorText);
         return;
-      }
-
-      if (widget.car == null) {
-        bool nameUsed = await _carNameAlreadyUsed(carName);
-        if (nameUsed) {
-          _showErrorPopUp(
-              "You already have a car with this name or identification number saved!",
-              errorText);
-          return;
-        }
       }
 
       if (isInsuranceSelected && insuranceExpiringDate == null) {
@@ -434,12 +429,16 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
             "Please select the austrian vignette expiration date!", errorText);
         return;
       }
-      _scheduleNotificationsForItems();
-      _addCarToDatabase();
+      setState(() => _saving = true);
+      try {
+        await _addCarToDatabase();
+      } finally {
+        if (mounted) setState(() => _saving = false);
+      }
     }
   }
 
-  void _addCarToDatabase() {
+  Future<void> _addCarToDatabase() async {
     Map<String, dynamic> carData = {
       'insurance_date':
           isInsuranceSelected ? insuranceExpiringDate?.toIso8601String() : null,
@@ -457,24 +456,68 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
           : null,
     };
 
-    FirebaseFirestore.instance
-        .collection('cars')
-        .doc(currentUserId)
-        .collection('user_cars')
-        .doc(carName)
-        .set(carData)
-        .then((_) {
-      _showErrorPopUp(
-          widget.car == null
-              ? "Car successfully added!"
-              : "Car successfully edited!",
-          successText);
-    }).catchError((error) {
-      _showErrorPopUp("Error at adding the car into the database!", errorText);
-    });
+    try {
+      await CarService().save(
+        userId: currentUserId,
+        registration: carName,
+        previousRegistration: widget.car?.name,
+        dates: carData,
+      );
+    } on CarSaveException catch (error) {
+      if (mounted) _showErrorPopUp(error.message, errorText);
+      return;
+    } catch (_) {
+      if (mounted) {
+        _showErrorPopUp(
+            'Could not save your car. Please try again.', errorText);
+      }
+      return;
+    }
+    String? reminderWarning;
+    bool notificationsOff = false;
+    try {
+      if (carData.values.any((value) => value != null)) {
+        await NotificationPermissionService().requestIfNotAsked();
+      }
+    } catch (_) {
+      // Permission errors must not prevent reconciliation or undo the save.
+    }
+    final result = await NotificationsService.instance.refresh(
+        savedUser: currentUserId,
+        savedCar: carName,
+        renamedFrom: widget.car?.name,
+        savedDates: carData);
+    notificationsOff = result == ReminderStatus.disabled;
+    if (result == ReminderStatus.failed) {
+      reminderWarning = 'Car saved. Reminders will retry automatically.';
+    } else if (notificationsOff) {
+      reminderWarning = 'Car saved. Notifications are disabled.';
+    }
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    Navigator.of(context).pop();
+    mainScreenKey.currentState?.selectTab(1);
+    messenger.showSnackBar(SnackBar(
+      content: Text(reminderWarning ?? 'Car saved.'),
+      action: notificationsOff
+          ? SnackBarAction(
+              label: 'Settings',
+              onPressed: () async {
+                try {
+                  await NotificationPermissionService().openSettings();
+                } catch (_) {
+                  if (messenger.mounted) {
+                    messenger.showSnackBar(const SnackBar(
+                        content: Text('Could not open Settings.')));
+                  }
+                }
+              })
+          : null,
+    ));
   }
 
   void _showErrorPopUp(String errorMessage, String titleMesssage) {
+    if (!mounted) return;
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -494,24 +537,6 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
             ],
           );
         });
-  }
-
-  Future<bool> _carNameAlreadyUsed(String carName) async {
-    bool result = false;
-    try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection('cars')
-          .doc(currentUserId)
-          .collection('user_cars')
-          .doc(carName)
-          .get();
-      if (snapshot.exists) {
-        result = true;
-      }
-    } catch (error) {
-      _showErrorPopUp("Error in querying the database: $error", errorText);
-    }
-    return result;
   }
 
   void _loadCarDetails() {
@@ -543,30 +568,5 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
         widget.car!.items['austrian_vignette_date'] != null
             ? DateTime.tryParse(widget.car!.items['austrian_vignette_date']!)
             : null;
-  }
-
-  void _scheduleNotificationsForItems() {
-    if (isInsuranceSelected && insuranceExpiringDate != null) {
-      _notificationService.scheduleNotification(
-          'insurance', insuranceExpiringDate!, '$carName Insurance Reminder');
-    }
-    if (isInspectionSelected && inspectionExpiringDate != null) {
-      _notificationService.scheduleNotification('inspection',
-          inspectionExpiringDate!, '$carName Inspection Reminder');
-    }
-    if (isRomanianVignetteSelected && romanianVignetteExpiringDate != null) {
-      _notificationService.scheduleNotification('romanian_vignette',
-          romanianVignetteExpiringDate!, '$carName Romanian Vignette Reminder');
-    }
-    if (isHungarianVignetteSelected && hungarianVignetteExpiringDate != null) {
-      _notificationService.scheduleNotification(
-          'hungarian_vignette',
-          hungarianVignetteExpiringDate!,
-          '$carName Hungarian Vignette Reminder');
-    }
-    if (isAustrianVignetteSelected && austrianVignetteExpiringDate != null) {
-      _notificationService.scheduleNotification('austrian_vignette',
-          austrianVignetteExpiringDate!, '$carName Austrian Vignette Reminder');
-    }
   }
 }

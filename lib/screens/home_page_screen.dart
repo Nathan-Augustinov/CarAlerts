@@ -1,16 +1,10 @@
+import '../theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/car.dart';
 import 'add_or_edit_car_screen.dart';
-
-const _ink = Color(0xFF172D38);
-const _teal = Color(0xFF15766D);
-const _muted = Color(0xFF647681);
-const _background = Color(0xFFF3F6F7);
-const _red = Color(0xFFAD3939);
-const _amber = Color(0xFF94600E);
 
 enum _DeadlineFilter { attention, upcoming, all }
 
@@ -52,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
         .split(RegExp(r'\s+'))
         .first;
     return Scaffold(
-      backgroundColor: _background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
           child: Center(
               child: ConstrainedBox(
@@ -95,9 +89,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('AT A GLANCE',
+                      Text('AT A GLANCE',
                           style: TextStyle(
-                              color: _teal,
+                              color: context.palette.accent,
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 2)),
@@ -106,27 +100,29 @@ class _MyHomePageState extends State<MyHomePage> {
                           name == null || name.isEmpty
                               ? 'Hello there'
                               : 'Hello, $name',
-                          style: const TextStyle(
-                              color: _ink,
+                          style: TextStyle(
+                              color: context.palette.ink,
                               fontSize: 34,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -1)),
                       const SizedBox(height: 6),
-                      const Text('A little planning. A smoother journey.',
-                          style: TextStyle(color: _muted, fontSize: 14)),
+                      Text('A little planning. A smoother journey.',
+                          style: TextStyle(
+                              color: context.palette.muted, fontSize: 14)),
                       if (snapshot.hasData && !snapshot.hasError) ...[
                         const SizedBox(height: 24),
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(22),
                           decoration: BoxDecoration(
-                              color: _ink,
+                              color: context.palette.banner,
                               borderRadius: BorderRadius.circular(20)),
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(Icons.shield_outlined,
-                                    color: Color(0xFF9EDBD0), size: 30),
+                                Icon(Icons.shield_outlined,
+                                    color: context.palette.bannerAccent,
+                                    size: 30),
                                 const SizedBox(height: 18),
                                 Text(
                                     deadlines.isEmpty
@@ -134,8 +130,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                         : attention > 0
                                             ? '$attention ${attention == 1 ? 'deadline needs' : 'deadlines need'} attention'
                                             : 'You’re ahead of your deadlines',
-                                    style: const TextStyle(
-                                        color: Colors.white,
+                                    style: TextStyle(
+                                        color: context.palette.onBanner,
                                         fontSize: 23,
                                         fontWeight: FontWeight.w700)),
                                 const SizedBox(height: 8),
@@ -145,8 +141,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                         : attention > 0
                                             ? 'Review expired documents and dates due in the next 30 days.${invalid > 0 ? ' $invalid saved dates also need checking.' : ''}'
                                             : 'No saved dates are expired or due in the next 30 days.',
-                                    style: const TextStyle(
-                                        color: Color(0xFFC3D0D6),
+                                    style: TextStyle(
+                                        color: context.palette.bannerMuted,
                                         fontSize: 13,
                                         height: 1.5)),
                                 const SizedBox(height: 14),
@@ -156,7 +152,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                       : () => mainScreenKey.currentState
                                           ?.selectTab(1),
                                   style: TextButton.styleFrom(
-                                      foregroundColor: const Color(0xFF9EDBD0),
+                                      foregroundColor:
+                                          context.palette.bannerAccent,
                                       padding: EdgeInsets.zero,
                                       alignment: Alignment.centerLeft),
                                   icon: Icon(
@@ -174,14 +171,16 @@ class _MyHomePageState extends State<MyHomePage> {
                           const SizedBox(height: 16),
                           LayoutBuilder(builder: (context, constraints) {
                             final tiles = [
-                              _stat('$overdue', 'Overdue', _red),
-                              _stat('$soon', 'Due in 30 days', _amber),
+                              _stat(
+                                  '$overdue', 'Overdue', context.palette.error),
+                              _stat('$soon', 'Due in 30 days',
+                                  context.palette.warning),
                               _stat(
                                   '${cars.length}',
                                   cars.length == 1
                                       ? 'Car tracked'
                                       : 'Cars tracked',
-                                  _teal),
+                                  context.palette.accent),
                             ];
                             if (constraints.maxWidth < 300 ||
                                 MediaQuery.textScalerOf(context).scale(14) >
@@ -198,15 +197,16 @@ class _MyHomePageState extends State<MyHomePage> {
                             ]);
                           }),
                           const SizedBox(height: 28),
-                          const Text('Your deadlines',
+                          Text('Your deadlines',
                               style: TextStyle(
-                                  color: _ink,
+                                  color: context.palette.ink,
                                   fontSize: 21,
                                   fontWeight: FontWeight.w700)),
                           const SizedBox(height: 6),
-                          const Text(
+                          Text(
                               'The most urgent dates come first. Tap to manage.',
-                              style: TextStyle(color: _muted, fontSize: 12)),
+                              style: TextStyle(
+                                  color: context.palette.muted, fontSize: 12)),
                           const SizedBox(height: 14),
                           Wrap(spacing: 8, runSpacing: 8, children: [
                             _chip('Needs attention · $attention',
@@ -228,11 +228,12 @@ class _MyHomePageState extends State<MyHomePage> {
                             onPressed: () => setState(_connect),
                             child: const Text('Try again'))))
               else if (!snapshot.hasData)
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                     child: Padding(
-                        padding: EdgeInsets.all(64),
+                        padding: const EdgeInsets.all(64),
                         child: Center(
-                            child: CircularProgressIndicator(color: _teal))))
+                            child: CircularProgressIndicator(
+                                color: context.palette.accent))))
               else if (deadlines.isEmpty)
                 SliverToBoxAdapter(
                     child: _message(
@@ -270,10 +271,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _chip(String label, _DeadlineFilter filter) => ChoiceChip(
         label: Text(label),
         selected: _filter == filter,
-        selectedColor: const Color(0xFFDDEEEA),
-        backgroundColor: Colors.white,
+        selectedColor: context.palette.selected,
+        backgroundColor: context.palette.surface,
         labelStyle: TextStyle(
-            color: _filter == filter ? _teal : _muted,
+            color: _filter == filter
+                ? context.palette.accent
+                : context.palette.muted,
             fontWeight: FontWeight.w600),
         onSelected: (_) => setState(() => _filter = filter),
       );
@@ -281,27 +284,28 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _stat(String value, String label, Color color) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.palette.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE0E7EA))),
+            border: Border.all(color: context.palette.border)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(value,
               style: TextStyle(
                   color: color, fontSize: 26, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: _muted, fontSize: 11)),
+          Text(label,
+              style: TextStyle(color: context.palette.muted, fontSize: 11)),
         ]),
       );
 
   Widget _deadlineCard(_Deadline deadline) {
     final days = deadline.days;
     final color = days == null
-        ? _muted
+        ? context.palette.muted
         : days < 0
-            ? _red
+            ? context.palette.error
             : days <= 30
-                ? _amber
-                : _teal;
+                ? context.palette.warning
+                : context.palette.accent;
     final status = days == null
         ? 'Check date'
         : days < 0
@@ -312,10 +316,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Material(
-          color: Colors.white,
+          color: context.palette.surface,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
-              side: const BorderSide(color: Color(0xFFE0E7EA))),
+              side: BorderSide(color: context.palette.border)),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
               onTap: () => _edit(deadline.car),
@@ -343,14 +347,14 @@ class _MyHomePageState extends State<MyHomePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                             Text(deadline.label,
-                                style: const TextStyle(
-                                    color: _ink,
+                                style: TextStyle(
+                                    color: context.palette.ink,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700)),
                             const SizedBox(height: 5),
                             Text(deadline.car.name,
-                                style: const TextStyle(
-                                    color: _muted,
+                                style: TextStyle(
+                                    color: context.palette.muted,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600)),
                             const SizedBox(height: 10),
@@ -373,11 +377,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                               fontWeight: FontWeight.w700))),
                                   if (days != null)
                                     Text(Car.extractDate(deadline.value),
-                                        style: const TextStyle(
-                                            color: _muted, fontSize: 12)),
+                                        style: TextStyle(
+                                            color: context.palette.muted,
+                                            fontSize: 12)),
                                 ]),
                           ])),
-                      const Icon(Icons.chevron_right, color: _muted, size: 20),
+                      Icon(Icons.chevron_right,
+                          color: context.palette.muted, size: 20),
                     ]),
               )),
         ));
@@ -388,16 +394,18 @@ class _MyHomePageState extends State<MyHomePage> {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
         child: Column(children: [
-          Icon(icon, size: 48, color: _teal),
+          Icon(icon, size: 48, color: context.palette.accent),
           const SizedBox(height: 16),
           Text(title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                  color: _ink, fontSize: 21, fontWeight: FontWeight.w700)),
+              style: TextStyle(
+                  color: context.palette.ink,
+                  fontSize: 21,
+                  fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Text(description,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: _muted, height: 1.5)),
+              style: TextStyle(color: context.palette.muted, height: 1.5)),
           if (action != null) action,
         ]),
       );

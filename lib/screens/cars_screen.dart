@@ -1,13 +1,10 @@
+import '../theme/app_theme.dart';
+import '../services/notifications_service.dart';
 import 'package:car_alerts/screens/add_or_edit_car_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/car.dart';
-
-const _ink = Color(0xFF172D38);
-const _teal = Color(0xFF15766D);
-const _muted = Color(0xFF647681);
-const _background = Color(0xFFF3F6F7);
 
 enum _Filter { all, attention }
 
@@ -48,14 +45,15 @@ class _CarsScreenState extends State<CarsScreen> {
               child: const Text('Keep car')),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Remove',
-                  style: TextStyle(color: Color(0xFFAD3939)))),
+              child: Text('Remove',
+                  style: TextStyle(color: context.palette.error))),
         ],
       ),
     );
     if (confirmed != true) return;
     try {
       await _collection.doc(car.name).delete();
+      await NotificationsService.instance.refresh();
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -67,7 +65,7 @@ class _CarsScreenState extends State<CarsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: _carsStream,
@@ -95,33 +93,35 @@ class _CarsScreenState extends State<CarsScreen> {
                           child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('YOUR GARAGE',
+                          Text('YOUR GARAGE',
                               style: TextStyle(
-                                  color: _teal,
+                                  color: context.palette.accent,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2)),
                           const SizedBox(height: 10),
-                          const Text('Your cars',
+                          Text('Your cars',
                               style: TextStyle(
-                                  color: _ink,
+                                  color: context.palette.ink,
                                   fontSize: 34,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -1)),
                           const SizedBox(height: 6),
-                          const Text('Every car. Every deadline. In one place.',
-                              style: TextStyle(color: _muted, fontSize: 14)),
+                          Text('Every car. Every deadline. In one place.',
+                              style: TextStyle(
+                                  color: context.palette.muted, fontSize: 14)),
                           const SizedBox(height: 24),
                           if (snapshot.hasData && cars.isNotEmpty) ...[
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                  color: _ink,
+                                  color: context.palette.banner,
                                   borderRadius: BorderRadius.circular(20)),
                               child: Row(children: [
-                                const Icon(Icons.shield_outlined,
-                                    color: Color(0xFF9EDBD0), size: 30),
+                                Icon(Icons.shield_outlined,
+                                    color: context.palette.bannerAccent,
+                                    size: 30),
                                 const SizedBox(width: 16),
                                 Expanded(
                                     child: Column(
@@ -132,15 +132,16 @@ class _CarsScreenState extends State<CarsScreen> {
                                           attentionCount > 0
                                               ? '$attentionCount ${attentionCount == 1 ? 'car needs' : 'cars need'} attention'
                                               : 'No upcoming deadlines',
-                                          style: const TextStyle(
-                                              color: Colors.white,
+                                          style: TextStyle(
+                                              color: context.palette.onBanner,
                                               fontWeight: FontWeight.w700,
                                               fontSize: 17)),
                                       const SizedBox(height: 5),
-                                      const Text(
+                                      Text(
                                           'Expired or due within the next 30 days',
                                           style: TextStyle(
-                                              color: Color(0xFFC3D0D6),
+                                              color:
+                                                  context.palette.bannerMuted,
                                               fontSize: 12)),
                                     ])),
                               ]),
@@ -164,12 +165,12 @@ class _CarsScreenState extends State<CarsScreen> {
                               description:
                                   'Check your connection and reopen this page.'))
                     else if (!snapshot.hasData)
-                      const SliverToBoxAdapter(
+                      SliverToBoxAdapter(
                           child: Padding(
-                              padding: EdgeInsets.all(64),
+                              padding: const EdgeInsets.all(64),
                               child: Center(
-                                  child:
-                                      CircularProgressIndicator(color: _teal))))
+                                  child: CircularProgressIndicator(
+                                      color: context.palette.accent))))
                     else if (visible.isEmpty)
                       SliverToBoxAdapter(
                           child: _EmptyState(
@@ -205,8 +206,8 @@ class _CarsScreenState extends State<CarsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _edit(),
-        backgroundColor: _teal,
-        foregroundColor: Colors.white,
+        backgroundColor: context.palette.accent,
+        foregroundColor: context.palette.onAccent,
         icon: const Icon(Icons.add),
         label: const Text('Add car',
             style: TextStyle(fontWeight: FontWeight.w700)),
@@ -217,10 +218,12 @@ class _CarsScreenState extends State<CarsScreen> {
   Widget _filterChip(String label, _Filter filter) => ChoiceChip(
         label: Text(label),
         selected: _filter == filter,
-        selectedColor: const Color(0xFFDDEEEA),
-        backgroundColor: Colors.white,
+        selectedColor: context.palette.selected,
+        backgroundColor: context.palette.surface,
         labelStyle: TextStyle(
-            color: _filter == filter ? _teal : _muted,
+            color: _filter == filter
+                ? context.palette.accent
+                : context.palette.muted,
             fontWeight: FontWeight.w600),
         onSelected: (_) => setState(() => _filter = filter),
       );
@@ -268,51 +271,53 @@ class _CarCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE0E7EA))),
+          border: Border.all(color: context.palette.border)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: _background, borderRadius: BorderRadius.circular(14)),
-              child: const Icon(Icons.directions_car_outlined,
-                  color: _ink, size: 28)),
+                  color: context.palette.background,
+                  borderRadius: BorderRadius.circular(14)),
+              child: Icon(Icons.directions_car_outlined,
+                  color: context.palette.ink, size: 28)),
           const SizedBox(width: 12),
           Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text(car.name,
-                    style: const TextStyle(
-                        color: _ink,
+                    style: TextStyle(
+                        color: context.palette.ink,
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5)),
                 const SizedBox(height: 4),
                 Text(
                     '${entries.length} ${entries.length == 1 ? 'document' : 'documents'} tracked',
-                    style: const TextStyle(color: _muted, fontSize: 12)),
+                    style:
+                        TextStyle(color: context.palette.muted, fontSize: 12)),
               ])),
         ]),
-        const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Divider(height: 1, color: Color(0xFFEAF0F2))),
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Divider(height: 1, color: context.palette.divider)),
         if (entries.isEmpty)
-          const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
+          Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text('Add expiry dates to start tracking this car.',
-                  style: TextStyle(color: _muted))),
+                  style: TextStyle(color: context.palette.muted))),
         ...entries.map((entry) {
           final days = _days(entry.value);
           final color = days == null
-              ? _muted
+              ? context.palette.muted
               : days < 0
-                  ? const Color(0xFFAD3939)
+                  ? context.palette.error
                   : days <= 30
-                      ? const Color(0xFF94600E)
-                      : _teal;
+                      ? context.palette.warning
+                      : context.palette.accent;
           final status = days == null
               ? 'Check date'
               : days < 0
@@ -329,8 +334,8 @@ class _CarCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(_label(entry.key),
-                        style: const TextStyle(
-                            color: _ink,
+                        style: TextStyle(
+                            color: context.palette.ink,
                             fontSize: 14,
                             fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
@@ -338,7 +343,8 @@ class _CarCard extends StatelessWidget {
                         days == null
                             ? 'Update this expiry date'
                             : Car.extractDate(entry.value),
-                        style: const TextStyle(color: _muted, fontSize: 12)),
+                        style: TextStyle(
+                            color: context.palette.muted, fontSize: 12)),
                   ]);
               final badge = Container(
                   padding:
@@ -365,7 +371,7 @@ class _CarCard extends StatelessWidget {
             }),
           );
         }),
-        const Divider(height: 16, color: Color(0xFFEAF0F2)),
+        Divider(height: 16, color: context.palette.divider),
         OverflowBar(
           alignment: MainAxisAlignment.spaceBetween,
           overflowAlignment: OverflowBarAlignment.end,
@@ -376,12 +382,13 @@ class _CarCard extends StatelessWidget {
                 icon: const Icon(Icons.delete_outline, size: 18),
                 label: const Text('Remove car'),
                 style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFFAD3939))),
+                    foregroundColor: context.palette.error)),
             TextButton.icon(
                 onPressed: onEdit,
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 label: const Text('Manage car'),
-                style: TextButton.styleFrom(foregroundColor: _teal)),
+                style: TextButton.styleFrom(
+                    foregroundColor: context.palette.accent)),
           ],
         ),
       ]),
@@ -400,16 +407,18 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
         child: Column(children: [
-          Icon(icon, size: 56, color: _teal),
+          Icon(icon, size: 56, color: context.palette.accent),
           const SizedBox(height: 20),
           Text(title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                  color: _ink, fontSize: 22, fontWeight: FontWeight.w700)),
+              style: TextStyle(
+                  color: context.palette.ink,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           Text(description,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: _muted, height: 1.5)),
+              style: TextStyle(color: context.palette.muted, height: 1.5)),
         ]),
       );
 }
