@@ -3,6 +3,50 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('stale editor preserves concurrent dates and custom expiry fields',
+      () async {
+    final db = FakeFirebaseFirestore();
+    final service = CarService(firestore: db);
+    final doc = db.doc('cars/a/user_cars/CAR');
+    final original = <String, dynamic>{
+      'insurance_date': '2090-01-01',
+      'inspection_date': '2090-02-01',
+      'custom_expiries': {
+        'one': {'name': 'Permit', 'expiry_date': '2090-03-01'},
+        'remove': {'name': 'Remove', 'expiry_date': '2090-04-01'},
+      },
+    };
+    await doc.set({
+      ...original,
+      'insurance_date': '2091-01-01',
+      'custom_expiries': {
+        'one': {'name': 'Updated permit', 'expiry_date': '2090-03-01'},
+        'remove': {'name': 'Remove', 'expiry_date': '2090-04-01'},
+        'remote': {'name': 'Remote addition', 'expiry_date': '2090-05-01'},
+      },
+    });
+    final saved = await service.save(
+        userId: 'a',
+        registration: 'RENAMED',
+        previousRegistration: 'CAR',
+        originalDates: original,
+        dates: {
+          ...original,
+          'inspection_date': null,
+          'custom_expiries': {
+            'one': {'name': 'Permit', 'expiry_date': '2092-03-01'},
+          },
+        });
+    expect(saved['insurance_date'], '2091-01-01');
+    expect(saved['inspection_date'], isNull);
+    expect(saved['custom_expiries'], {
+      'one': {'name': 'Updated permit', 'expiry_date': '2092-03-01'},
+      'remote': {'name': 'Remote addition', 'expiry_date': '2090-05-01'},
+    });
+    expect((await db.doc('cars/a/user_cars/RENAMED').get()).data(), saved);
+    expect((await doc.get()).exists, isFalse);
+  });
+
   late FakeFirebaseFirestore db;
   late CarService service;
   const oldDates = {
