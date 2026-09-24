@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     .toList() ??
                 <Car>[];
             final deadlines = cars
-                .expand((car) => car.items.entries
+                .expand((car) => car.allItems.entries
                     .map((entry) => _Deadline(car, entry.key, entry.value)))
                 .toList()
               ..sort((a, b) {
@@ -425,10 +425,5 @@ class _Deadline {
   final String key;
   final String value;
   late final int? days;
-  String get label {
-    final text = key.replaceAll('_date', '').replaceAll('_', ' ');
-    return text.isEmpty
-        ? 'Document'
-        : '${text[0].toUpperCase()}${text.substring(1)}';
-  }
+  String get label => car.itemLabel(key);
 }

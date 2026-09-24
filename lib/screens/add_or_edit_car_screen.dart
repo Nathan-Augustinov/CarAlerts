@@ -1,4 +1,6 @@
 import '../theme/app_theme.dart';
+import '../models/expiry_validation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:car_alerts/main.dart';
 import 'package:car_alerts/models/car.dart';
@@ -22,6 +24,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   final TextEditingController _carNameController = TextEditingController();
   String carName = '';
   bool _saving = false;
+  final Map<String, Map<String, String>> _customExpiries = {};
   bool isInsuranceSelected = false;
   bool isInspectionSelected = false;
   bool isRomanianVignetteSelected = false;
@@ -55,12 +58,13 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   @override
   Widget build(BuildContext context) {
     final selected = [
-      isInsuranceSelected,
-      isInspectionSelected,
-      isRomanianVignetteSelected,
-      isHungarianVignetteSelected,
-      isAustrianVignetteSelected
-    ].where((value) => value).length;
+          isInsuranceSelected,
+          isInspectionSelected,
+          isRomanianVignetteSelected,
+          isHungarianVignetteSelected,
+          isAustrianVignetteSelected
+        ].where((value) => value).length +
+        _customExpiries.length;
     return Scaffold(
       backgroundColor: context.palette.background,
       appBar: AppBar(
@@ -122,7 +126,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                                       fontWeight: FontWeight.w700)),
                               const SizedBox(height: 5),
                               Text(
-                                  '$selected ${selected == 1 ? 'document selected' : 'documents selected'} for expiry tracking',
+                                  '$selected ${selected == 1 ? 'item' : 'items'} tracked',
                                   style: TextStyle(
                                       color: context.palette.bannerMuted,
                                       fontSize: 12,
@@ -235,8 +239,38 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                             setState(() => isAustrianVignetteSelected = value),
                         (date) => setState(
                             () => austrianVignetteExpiringDate = date)),
+                    const SizedBox(height: 28),
+                    Text('Other expiry dates',
+                        style: TextStyle(
+                            color: context.palette.ink,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 6),
+                    Text(
+                        'Track parking permits, warranties and more. Up to 10 per car.',
+                        style: TextStyle(
+                            color: context.palette.muted, fontSize: 13)),
+                    const SizedBox(height: 16),
+                    for (final entry in _customExpiries.entries)
+                      _customCard(entry.key, entry.value),
+                    OutlinedButton.icon(
+                      onPressed: _saving || _customExpiries.length >= 10
+                          ? null
+                          : () => setState(() {
+                                final id = FirebaseFirestore.instance
+                                    .collection('cars')
+                                    .doc()
+                                    .id;
+                                _customExpiries[id] = {
+                                  'name': '',
+                                  'expiry_date': ''
+                                };
+                              }),
+                      icon: const Icon(Icons.add),
+                      label: Text('Add expiry (${_customExpiries.length}/10)'),
+                    ),
                     const SizedBox(height: 12),
-                    Text('You can add or update documents at any time.',
+                    Text('You can add or update expiry dates at any time.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: context.palette.muted, fontSize: 12)),
@@ -314,7 +348,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                 key: ValueKey('$title-$date'),
                 initialValue: date,
                 validator: (_) =>
-                    date == null ? 'Choose an expiry date.' : null,
+                    validateExpiryDate(date, original: _originalDate(title)),
                 builder: (field) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -327,13 +361,16 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                               ? null
                               : () async {
                                   final now = DateTime.now();
-                                  final initial = date ?? now;
+                                  final today =
+                                      DateTime(now.year, now.month, now.day);
+                                  final initial =
+                                      date == null || date.isBefore(today)
+                                          ? today
+                                          : date;
                                   final picked = await showDatePicker(
                                     context: context,
                                     initialDate: initial,
-                                    firstDate: DateTime(initial.year < 2021
-                                        ? initial.year
-                                        : 2021),
+                                    firstDate: today,
                                     lastDate: DateTime(
                                         initial.year > now.year + 15
                                             ? initial.year
@@ -393,6 +430,98 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
     );
   }
 
+  String? _originalDate(String title) {
+    const keys = {
+      'Car insurance': 'insurance_date',
+      'Car inspection': 'inspection_date',
+      'Romanian vignette': 'romanian_vignette_date',
+      'Hungarian vignette': 'hungarian_vignette_date',
+      'Austrian vignette': 'austrian_vignette_date',
+    };
+    return widget.car?.items[keys[title]];
+  }
+
+  Widget _customCard(String id, Map<String, String> item) {
+    final date = DateTime.tryParse(item['expiry_date'] ?? '');
+    return Container(
+      key: ValueKey(id),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(18),
+      decoration: _cardDecoration,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [
+          Expanded(
+              child: TextFormField(
+            initialValue: item['name'],
+            enabled: !_saving,
+            maxLength: 50,
+            decoration: const InputDecoration(
+                labelText: 'Expiry name', hintText: 'e.g. Parking permit'),
+            onChanged: (value) => item['name'] = value,
+            validator: (value) {
+              final name = (value ?? '').trim();
+              if (name.isEmpty) return 'Enter an expiry name.';
+              if (name.length > 50) return 'Use 50 characters or fewer.';
+              if (_customExpiries.entries.any((other) =>
+                  other.key != id &&
+                  other.value['name']!.trim().toLowerCase() ==
+                      name.toLowerCase())) {
+                return 'Use a different expiry name.';
+              }
+              return null;
+            },
+          )),
+          IconButton(
+              tooltip: 'Remove expiry',
+              onPressed: _saving
+                  ? null
+                  : () => setState(() => _customExpiries.remove(id)),
+              icon: const Icon(Icons.delete_outline)),
+        ]),
+        FormField<DateTime>(
+          key: ValueKey('$id-$date'),
+          validator: (_) => validateExpiryDate(date,
+              original: widget.car?.customExpiries[id]?['expiry_date']),
+          builder: (field) =>
+              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            OutlinedButton.icon(
+              onPressed: _saving
+                  ? null
+                  : () async {
+                      final now = DateTime.now();
+                      final today = DateTime(now.year, now.month, now.day);
+                      final initial =
+                          date == null || date.isBefore(today) ? today : date;
+                      final picked = await showDatePicker(
+                          context: context,
+                          initialDate: initial,
+                          firstDate: today,
+                          lastDate: DateTime(
+                              initial.year > now.year + 15
+                                  ? initial.year
+                                  : now.year + 15,
+                              12,
+                              31),
+                          helpText: 'Expiry date');
+                      if (picked != null && mounted) {
+                        setState(() =>
+                            item['expiry_date'] = picked.toIso8601String());
+                      }
+                    },
+              icon: const Icon(Icons.calendar_today_outlined),
+              label: Text(date == null
+                  ? 'Choose expiry date'
+                  : Car.extractDate(item['expiry_date']!)),
+            ),
+            if (field.hasError)
+              Text(field.errorText!,
+                  style: TextStyle(color: context.palette.error, fontSize: 12)),
+          ]),
+        ),
+      ]),
+    );
+  }
+
   Future<void> _saveCar() async {
     if (_saving) return;
     if (_formKey.currentState!.validate()) {
@@ -440,6 +569,10 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
 
   Future<void> _addCarToDatabase() async {
     Map<String, dynamic> carData = {
+      'custom_expiries': {
+        for (final entry in _customExpiries.entries)
+          entry.key: {...entry.value, 'name': entry.value['name']!.trim()}
+      },
       'insurance_date':
           isInsuranceSelected ? insuranceExpiringDate?.toIso8601String() : null,
       'inspection_date': isInspectionSelected
@@ -466,7 +599,17 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
     } on CarSaveException catch (error) {
       if (mounted) _showErrorPopUp(error.message, errorText);
       return;
-    } catch (_) {
+    } on FirebaseException catch (error, stack) {
+      debugPrint('Car save failed [${error.plugin}/${error.code}]: ${error.message}');
+      debugPrintStack(stackTrace: stack);
+      if (mounted) {
+        _showErrorPopUp(
+            'Could not save your car. Please try again.', errorText);
+      }
+      return;
+    } catch (error, stack) {
+      debugPrint('Car save failed: $error');
+      debugPrintStack(stackTrace: stack);
       if (mounted) {
         _showErrorPopUp(
             'Could not save your car. Please try again.', errorText);
@@ -476,7 +619,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
     String? reminderWarning;
     bool notificationsOff = false;
     try {
-      if (carData.values.any((value) => value != null)) {
+      if (Car.fromMap(carData, carName).allItems.isNotEmpty) {
         await NotificationPermissionService().requestIfNotAsked();
       }
     } catch (_) {
@@ -540,6 +683,10 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   }
 
   void _loadCarDetails() {
+    _customExpiries.addAll({
+      for (final entry in widget.car!.customExpiries.entries)
+        entry.key: Map<String, String>.from(entry.value)
+    });
     carName = _carNameController.text = widget.car!.name;
     isInsuranceSelected = widget.car!.items['insurance_date'] != null;
     isInspectionSelected = widget.car!.items['inspection_date'] != null;
