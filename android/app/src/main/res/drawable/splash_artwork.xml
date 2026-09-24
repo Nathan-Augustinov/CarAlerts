@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android resizes this drawable before applying its circular splash mask.
+     Fractional insets scale with those bounds; fixed dp layer sizes do not. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="16%"
+    android:insetTop="16%"
+    android:insetRight="16%"
+    android:insetBottom="16%">
+    <bitmap android:src="@drawable/splash_mark"
+        android:gravity="fill" android:filter="true" />
+</inset>
