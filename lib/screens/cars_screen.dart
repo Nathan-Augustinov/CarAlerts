@@ -1,3 +1,5 @@
+import '../l10n/localized_content.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/calendar_day_refresh.dart';
 import '../theme/app_theme.dart';
 import '../services/notifications_service.dart';
@@ -38,16 +40,16 @@ class _CarsScreenState extends State<CarsScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Remove ${car.name}?'),
-        content:
-            const Text('This car and its saved expiry dates will be removed.'),
+        title: Text(AppLocalizations.of(context)!.removeNamedCar(car.name)),
+        content: Text(AppLocalizations.of(context)!
+            .thisCarAndItsSavedExpiryDatesWillBeRemoved),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Keep car')),
+              child: Text(AppLocalizations.of(context)!.keepCar)),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Remove',
+              child: Text(AppLocalizations.of(context)!.remove,
                   style: TextStyle(color: context.palette.error))),
         ],
       ),
@@ -58,8 +60,9 @@ class _CarsScreenState extends State<CarsScreen>
       await NotificationsService.instance.refresh();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Could not remove the car. Please try again.'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            AppLocalizations.of(context)!.couldNotRemoveTheCarPleaseTryAgain),
       ));
     }
   }
@@ -95,21 +98,23 @@ class _CarsScreenState extends State<CarsScreen>
                           child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('YOUR GARAGE',
+                          Text(AppLocalizations.of(context)!.yourGarage,
                               style: TextStyle(
                                   color: context.palette.accent,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2)),
                           const SizedBox(height: 10),
-                          Text('Your cars',
+                          Text(AppLocalizations.of(context)!.yourCars,
                               style: TextStyle(
                                   color: context.palette.ink,
                                   fontSize: 34,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -1)),
                           const SizedBox(height: 6),
-                          Text('Every car. Every deadline. In one place.',
+                          Text(
+                              AppLocalizations.of(context)!
+                                  .everyCarEveryDeadlineInOnePlace,
                               style: TextStyle(
                                   color: context.palette.muted, fontSize: 14)),
                           const SizedBox(height: 24),
@@ -132,15 +137,19 @@ class _CarsScreenState extends State<CarsScreen>
                                         children: [
                                       Text(
                                           attentionCount > 0
-                                              ? '$attentionCount ${attentionCount == 1 ? 'car needs' : 'cars need'} attention'
-                                              : 'No upcoming deadlines',
+                                              ? AppLocalizations.of(context)!
+                                                  .carsNeedAttention(
+                                                      attentionCount)
+                                              : AppLocalizations.of(context)!
+                                                  .noUpcomingDeadlines,
                                           style: TextStyle(
                                               color: context.palette.onBanner,
                                               fontWeight: FontWeight.w700,
                                               fontSize: 17)),
                                       const SizedBox(height: 5),
                                       Text(
-                                          'Expired or due within the next 30 days',
+                                          AppLocalizations.of(context)!
+                                              .expiredOrDueWithinTheNextDays,
                                           style: TextStyle(
                                               color:
                                                   context.palette.bannerMuted,
@@ -151,8 +160,12 @@ class _CarsScreenState extends State<CarsScreen>
                             const SizedBox(height: 20),
                             Wrap(spacing: 8, runSpacing: 8, children: [
                               _filterChip(
-                                  'All cars · ${cars.length}', _Filter.all),
-                              _filterChip('Needs attention · $attentionCount',
+                                  AppLocalizations.of(context)!
+                                      .allCarsCount(cars.length),
+                                  _Filter.all),
+                              _filterChip(
+                                  AppLocalizations.of(context)!
+                                      .attentionCount(attentionCount),
                                   _Filter.attention),
                             ]),
                           ],
@@ -160,12 +173,13 @@ class _CarsScreenState extends State<CarsScreen>
                       )),
                     ),
                     if (snapshot.hasError)
-                      const SliverToBoxAdapter(
+                      SliverToBoxAdapter(
                           child: _EmptyState(
                               icon: Icons.cloud_off_outlined,
-                              title: 'Unable to load your cars',
-                              description:
-                                  'Check your connection and reopen this page.'))
+                              title: AppLocalizations.of(context)!
+                                  .unableToLoadYourCars,
+                              description: AppLocalizations.of(context)!
+                                  .checkYourConnectionAndReopenThisPage))
                     else if (!snapshot.hasData)
                       SliverToBoxAdapter(
                           child: Padding(
@@ -180,11 +194,14 @@ class _CarsScreenState extends State<CarsScreen>
                             ? Icons.directions_car_outlined
                             : Icons.check_circle_outline,
                         title: cars.isEmpty
-                            ? 'Your garage starts here'
-                            : 'Nothing needs attention',
+                            ? AppLocalizations.of(context)!.yourGarageStartsHere
+                            : AppLocalizations.of(context)!
+                                .nothingNeedsAttention,
                         description: cars.isEmpty
-                            ? 'Add your first car to keep insurance, inspections and vignettes together.'
-                            : 'No saved dates are expired or due in the next 30 days.',
+                            ? AppLocalizations.of(context)!
+                                .addYourFirstCarToKeepInsuranceInspectionsAndVignettesTogether
+                            : AppLocalizations.of(context)!
+                                .noSavedDatesAreExpiredOrDueInTheNextDays,
                       ))
                     else
                       SliverPadding(
@@ -198,7 +215,8 @@ class _CarsScreenState extends State<CarsScreen>
                           childCount: visible.length,
                         )),
                       ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                    const SliverToBoxAdapter(
+                        child: SizedBox(height: 100)),
                   ],
                 ),
               ),
@@ -211,8 +229,8 @@ class _CarsScreenState extends State<CarsScreen>
         backgroundColor: context.palette.accent,
         foregroundColor: context.palette.onAccent,
         icon: const Icon(Icons.add),
-        label: const Text('Add car',
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        label: Text(AppLocalizations.of(context)!.addCar,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -291,7 +309,8 @@ class _CarCard extends StatelessWidget {
                         letterSpacing: 0.5)),
                 const SizedBox(height: 4),
                 Text(
-                    '${entries.length} ${entries.length == 1 ? 'document' : 'documents'} tracked',
+                    AppLocalizations.of(context)!
+                        .documentsTracked(entries.length),
                     style:
                         TextStyle(color: context.palette.muted, fontSize: 12)),
               ])),
@@ -302,7 +321,9 @@ class _CarCard extends StatelessWidget {
         if (entries.isEmpty)
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text('Add expiry dates to start tracking this car.',
+              child: Text(
+                  AppLocalizations.of(context)!
+                      .addExpiryDatesToStartTrackingThisCar,
                   style: TextStyle(color: context.palette.muted))),
         ...entries.map((entry) {
           final days = _days(entry.value);
@@ -314,21 +335,21 @@ class _CarCard extends StatelessWidget {
                       ? context.palette.warning
                       : context.palette.accent;
           final status = days == null
-              ? 'Check date'
+              ? AppLocalizations.of(context)!.checkDate
               : days < 0
-                  ? '${days.abs()}d overdue'
+                  ? AppLocalizations.of(context)!.daysOverdue(days.abs())
                   : days == 0
-                      ? 'Due today'
+                      ? AppLocalizations.of(context)!.dueToday
                       : days <= 30
-                          ? 'Due in ${days}d'
-                          : 'Up to date';
+                          ? AppLocalizations.of(context)!.dueInDays(days)
+                          : AppLocalizations.of(context)!.upToDate;
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: LayoutBuilder(builder: (context, constraints) {
               final title = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(car.itemLabel(entry.key),
+                    Text(carItemLabel(context, car, entry.key),
                         style: TextStyle(
                             color: context.palette.ink,
                             fontSize: 14,
@@ -336,8 +357,8 @@ class _CarCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                         days == null
-                            ? 'Update this expiry date'
-                            : Car.extractDate(entry.value),
+                            ? AppLocalizations.of(context)!.updateThisExpiryDate
+                            : localizedDate(context, entry.value),
                         style: TextStyle(
                             color: context.palette.muted, fontSize: 12)),
                   ]);
@@ -375,13 +396,13 @@ class _CarCard extends StatelessWidget {
             TextButton.icon(
                 onPressed: onDelete,
                 icon: const Icon(Icons.delete_outline, size: 18),
-                label: const Text('Remove car'),
+                label: Text(AppLocalizations.of(context)!.removeCar),
                 style: TextButton.styleFrom(
                     foregroundColor: context.palette.error)),
             TextButton.icon(
                 onPressed: onEdit,
                 icon: const Icon(Icons.edit_outlined, size: 16),
-                label: const Text('Manage car'),
+                label: Text(AppLocalizations.of(context)!.manageCar),
                 style: TextButton.styleFrom(
                     foregroundColor: context.palette.accent)),
           ],

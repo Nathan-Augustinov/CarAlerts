@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -22,20 +23,21 @@ class SplashScreen extends StatelessWidget {
                         ? 200
                         : 288,
                     filterQuality: FilterQuality.high)),
-            const Positioned.fill(
+            Positioned.fill(
                 child: SafeArea(
                     child: Column(children: [
-              Spacer(),
-              Text('Car Alerts',
+              const Spacer(),
+              const Text('CarAlerts',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.5)),
-              SizedBox(height: 8),
-              Text('Every car. Every deadline.',
-                  style: TextStyle(color: Color(0xFF9EDBD0), fontSize: 13)),
-              SizedBox(height: 48),
+              const SizedBox(height: 8),
+              Text(AppLocalizations.of(context)!.splashTagline,
+                  style: const TextStyle(
+                      color: Color(0xFF9EDBD0), fontSize: 13)),
+              const SizedBox(height: 48),
             ]))),
           ]),
         ),

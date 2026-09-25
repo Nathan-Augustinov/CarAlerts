@@ -1,3 +1,5 @@
+import '../l10n/app_localizations.dart';
+import 'language_controller.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -97,6 +99,8 @@ class NotificationsService extends ReminderBackend {
   }
 
   @override
+  String get language => LanguageController.instance.locale.languageCode;
+  @override
   String? get user => FirebaseAuth.instance.currentUser?.uid;
   @override
   int? get limit => Platform.isIOS ? 64 : null;
@@ -126,9 +130,13 @@ class NotificationsService extends ReminderBackend {
     await _plugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(const AndroidNotificationChannel(
-            '1', 'Expiry Notifications',
-            description: 'Reminders for car expiry dates',
+        ?.createNotificationChannel(AndroidNotificationChannel(
+            '1',
+            lookupAppLocalizations(LanguageController.instance.locale)
+                .expiryNotifications,
+            description:
+                lookupAppLocalizations(LanguageController.instance.locale)
+                    .remindersDescription,
             importance: Importance.high));
     final launch = await _plugin.getNotificationAppLaunchDetails();
     if (launch?.didNotificationLaunchApp == true) {
@@ -179,13 +187,18 @@ class NotificationsService extends ReminderBackend {
       title: reminder.title,
       body: reminder.body,
       payload: reminder.payload,
-      notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails('1', 'Expiry Notifications',
-              channelDescription: 'Reminders for car expiry dates',
+      notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+              '1',
+              lookupAppLocalizations(LanguageController.instance.locale)
+                  .expiryNotifications,
+              channelDescription:
+                  lookupAppLocalizations(LanguageController.instance.locale)
+                      .remindersDescription,
               importance: Importance.high,
               priority: Priority.high,
               onlyAlertOnce: true),
-          iOS: DarwinNotificationDetails(
+          iOS: const DarwinNotificationDetails(
               presentAlert: true, presentSound: true)));
   @override
   Future<void> cancel(int id) => _plugin.cancel(id: id);
@@ -197,10 +210,15 @@ class NotificationsService extends ReminderBackend {
       scheduledDate: reminder.date,
       payload: reminder.payload,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails('1', 'Expiry Notifications',
-              channelDescription: 'Reminders for car expiry dates',
+      notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+              '1',
+              lookupAppLocalizations(LanguageController.instance.locale)
+                  .expiryNotifications,
+              channelDescription:
+                  lookupAppLocalizations(LanguageController.instance.locale)
+                      .remindersDescription,
               importance: Importance.high),
-          iOS: DarwinNotificationDetails(
+          iOS: const DarwinNotificationDetails(
               presentAlert: true, presentSound: true)));
 }

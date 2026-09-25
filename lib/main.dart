@@ -1,3 +1,5 @@
+import 'l10n/app_localizations.dart';
+import 'services/language_controller.dart';
 import 'package:flutter/services.dart';
 import 'services/appearance_controller.dart';
 import 'theme/app_theme.dart';
@@ -45,10 +47,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _notifications.onTap = _openReminder;
-    _auth = _authState.listen((_) {
+    LanguageController.instance.addListener(_languageChanged);
+    _auth = _authState.listen((user) {
+      LanguageController.instance.bindUser(user?.uid);
       _navigator.currentState?.popUntil((route) => route.isFirst);
       _refresh();
     });
+  }
+
+  void _languageChanged() {
+    if (!LanguageController.instance.saving) _refresh();
   }
 
   Future<void> _refresh() async {
@@ -68,7 +76,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       final data = jsonDecode(payload ?? '') as Map;
       final user = FirebaseAuth.instance.currentUser?.uid;
       if (user == null || data['user'] != user) {
-        _message('Sign in to the reminder’s account to view this car.');
+        _message(lookupAppLocalizations(LanguageController.instance.locale)
+            .signInToTheReminderSAccountToViewThisCar);
         return;
       }
       final doc = await FirebaseFirestore.instance
@@ -80,14 +89,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           .timeout(const Duration(seconds: 20));
       if (!mounted || FirebaseAuth.instance.currentUser?.uid != user) return;
       if (!doc.exists) {
-        _message('This car has been removed.');
+        _message(lookupAppLocalizations(LanguageController.instance.locale)
+            .thisCarHasBeenRemoved);
         return;
       }
       _navigator.currentState?.push(MaterialPageRoute(
           builder: (_) =>
               AddOrEditCarScreen(car: Car.fromMap(doc.data()!, doc.id))));
     } catch (_) {
-      _message('Could not open this car. Please check Your cars.');
+      _message(lookupAppLocalizations(LanguageController.instance.locale)
+          .couldNotOpenThisCarPleaseCheckYourCars);
     }
   }
 
@@ -103,6 +114,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _auth?.cancel();
+    LanguageController.instance.removeListener(_languageChanged);
     _notifications.onTap = null;
     super.dispose();
   }
@@ -110,11 +122,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: AppearanceController.instance,
+      listenable: Listenable.merge(
+          [AppearanceController.instance, LanguageController.instance]),
       builder: (context, _) => MaterialApp(
         navigatorKey: _navigator,
         scaffoldMessengerKey: _messenger,
-        title: 'Car Alerts',
+        title: 'CarAlerts',
+        locale: LanguageController.instance.locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: AppearanceController.instance.mode,

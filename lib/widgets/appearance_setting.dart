@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../services/appearance_controller.dart';
 import '../theme/app_theme.dart';
@@ -11,22 +12,22 @@ class AppearanceSetting extends StatelessWidget {
         listenable: controller,
         builder: (context, _) {
           final effective = Theme.of(context).brightness == Brightness.dark
-              ? 'Dark'
-              : 'Light';
+              ? AppLocalizations.of(context)!.dark
+              : AppLocalizations.of(context)!.light;
           return ListTile(
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             leading:
                 Icon(Icons.palette_outlined, color: context.palette.accent),
-            title: Text('Appearance',
+            title: Text(AppLocalizations.of(context)!.appearance,
                 style: TextStyle(
                     color: context.palette.ink,
                     fontSize: 15,
                     fontWeight: FontWeight.w700)),
             subtitle: Text(
                 controller.mode == ThemeMode.system
-                    ? 'System · $effective'
-                    : controller.mode.label,
+                    ? '${AppLocalizations.of(context)!.system} · $effective'
+                    : _label(context, controller.mode),
                 style: TextStyle(color: context.palette.muted, fontSize: 12)),
             trailing: Icon(Icons.chevron_right, color: context.palette.muted),
             onTap: () => showModalBottomSheet<void>(
@@ -66,7 +67,7 @@ class _AppearanceSelectorState extends State<_AppearanceSelector> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: Text('Appearance',
+                    child: Text(AppLocalizations.of(context)!.appearance,
                         style: Theme.of(context).textTheme.headlineSmall),
                   ),
                   if (_error != null)
@@ -88,8 +89,8 @@ class _AppearanceSelectorState extends State<_AppearanceSelector> {
                         if (context.mounted) Navigator.of(context).pop();
                       } catch (_) {
                         if (context.mounted) {
-                          setState(() => _error =
-                              'Could not save appearance. Please try again.');
+                          setState(() => _error = AppLocalizations.of(context)!
+                              .appearanceSaveError);
                         }
                       }
                     },
@@ -99,11 +100,14 @@ class _AppearanceSelectorState extends State<_AppearanceSelector> {
                           RadioListTile<ThemeMode>(
                             value: mode,
                             enabled: !controller.saving,
-                            title: Text(mode.label),
+                            title: Text(_label(context, mode)),
                             subtitle: Text(switch (mode) {
-                              ThemeMode.system => 'Follow your device settings',
-                              ThemeMode.light => 'Always use light appearance',
-                              ThemeMode.dark => 'Always use dark appearance',
+                              ThemeMode.system =>
+                                AppLocalizations.of(context)!.followDevice,
+                              ThemeMode.light =>
+                                AppLocalizations.of(context)!.alwaysLight,
+                              ThemeMode.dark =>
+                                AppLocalizations.of(context)!.alwaysDark,
                             }),
                           ),
                       ],
@@ -115,4 +119,13 @@ class _AppearanceSelectorState extends State<_AppearanceSelector> {
           ),
         ),
       );
+}
+
+String _label(BuildContext context, ThemeMode mode) {
+  final l = AppLocalizations.of(context)!;
+  return switch (mode) {
+    ThemeMode.system => l.system,
+    ThemeMode.light => l.light,
+    ThemeMode.dark => l.dark
+  };
 }

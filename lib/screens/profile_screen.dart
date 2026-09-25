@@ -1,3 +1,6 @@
+import '../services/language_controller.dart';
+import '../widgets/language_setting.dart';
+import '../l10n/app_localizations.dart';
 import 'delete_account_screen.dart';
 import '../services/account_deletion_service.dart';
 import '../services/appearance_controller.dart';
@@ -62,7 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       setState(() {
         _permission = null;
         _checkingPermission = false;
-        _permissionError = 'Unable to check. Tap to retry.';
+        _permissionError = 'unavailable';
       });
     }
   }
@@ -81,9 +84,8 @@ class _ProfileScreenState extends State<ProfileScreen>
       await _refreshPermission();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content:
-            Text('Could not open notification settings. Please try again.'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppLocalizations.of(context)!.notificationSettingsError),
       ));
     } finally {
       if (mounted) setState(() => _permissionAction = false);
@@ -94,82 +96,58 @@ class _ProfileScreenState extends State<ProfileScreen>
     final enabled = _permission == NotificationPermission.enabled;
     final loading = _checkingPermission || _permissionAction;
     final label = _checkingPermission
-        ? 'Checking…'
+        ? AppLocalizations.of(context)!.checking
         : _permissionError != null
-            ? 'Status unavailable'
+            ? AppLocalizations.of(context)!.statusUnavailable
             : enabled
                 ? (scheduleStatus == ReminderStatus.failed
-                    ? 'Reminders will retry automatically'
-                    : 'Enabled')
-                : 'Not enabled';
-    return InkWell(
+                    ? AppLocalizations.of(context)!.reminderRetry
+                    : AppLocalizations.of(context)!.enabled)
+                : AppLocalizations.of(context)!.notEnabled;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      leading: Icon(Icons.notifications_none_outlined,
+          color: context.palette.accent),
+      title: Text(AppLocalizations.of(context)!.notifications,
+          style: TextStyle(
+              color: context.palette.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.w700)),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(
+                  color:
+                      enabled ? context.palette.accent : context.palette.muted,
+                  fontSize: 12,
+                  height: 1.5,
+                  fontWeight: FontWeight.w600)),
+          if (!enabled && !_checkingPermission)
+            Text(
+                _permissionError != null
+                    ? AppLocalizations.of(context)!.permissionError
+                    : _permission == NotificationPermission.notRequested
+                        ? AppLocalizations.of(context)!.allowReminders
+                        : AppLocalizations.of(context)!.enableInSettings,
+                style: TextStyle(
+                    color: context.palette.muted, fontSize: 12, height: 1.5)),
+        ],
+      ),
+      trailing: loading
+          ? SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: context.palette.accent))
+          : enabled
+              ? Icon(Icons.check_circle_outline, color: context.palette.accent)
+              : Icon(Icons.chevron_right, color: context.palette.muted),
       onTap: loading || enabled
           ? null
           : _permissionError != null
               ? _refreshPermission
               : _enableNotifications,
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-                color: context.palette.background,
-                borderRadius: BorderRadius.circular(12)),
-            child: Icon(Icons.notifications_none_outlined,
-                color: context.palette.accent, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text('Notifications',
-                    style: TextStyle(
-                        color: context.palette.ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
-                const SizedBox(height: 5),
-                Text(label,
-                    style: TextStyle(
-                        color: enabled
-                            ? context.palette.accent
-                            : context.palette.muted,
-                        fontSize: 12,
-                        height: 1.5,
-                        fontWeight: FontWeight.w600)),
-                if (!enabled && !_checkingPermission) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                      _permissionError ??
-                          (_permission == NotificationPermission.notRequested
-                              ? 'Tap to allow expiry reminders.'
-                              : 'Tap to enable in phone settings.'),
-                      style: TextStyle(
-                          color: context.palette.muted,
-                          fontSize: 12,
-                          height: 1.5)),
-                ],
-              ])),
-          const SizedBox(width: 12),
-          SizedBox(
-            height: 42,
-            width: 24,
-            child: Center(
-                child: loading
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: context.palette.accent))
-                    : enabled
-                        ? Icon(Icons.check_circle_outline,
-                            color: context.palette.accent, size: 22)
-                        : Icon(Icons.chevron_right,
-                            color: context.palette.muted)),
-          ),
-        ]),
-      ),
     );
   }
 
@@ -181,8 +159,8 @@ class _ProfileScreenState extends State<ProfileScreen>
       await AuthenticationService().signOutFromGoogle();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Could not sign out. Please try again.'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppLocalizations.of(context)!.signOutError),
       ));
     } finally {
       if (mounted) setState(() => _signingOut = false);
@@ -202,21 +180,21 @@ class _ProfileScreenState extends State<ProfileScreen>
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
           children: [
-            Text('MAKE IT YOURS',
+            Text(AppLocalizations.of(context)!.makeItYours,
                 style: TextStyle(
                     color: context.palette.accent,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 2)),
             const SizedBox(height: 10),
-            Text('Settings',
+            Text(AppLocalizations.of(context)!.settings,
                 style: TextStyle(
                     color: context.palette.ink,
                     fontSize: 34,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -1)),
             const SizedBox(height: 6),
-            Text('Your account and preferences, in one place.',
+            Text(AppLocalizations.of(context)!.settingsDescription,
                 style: TextStyle(color: context.palette.muted, fontSize: 14)),
             const SizedBox(height: 24),
             Container(
@@ -240,20 +218,23 @@ class _ProfileScreenState extends State<ProfileScreen>
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      Text('YOUR ACCOUNT',
+                      Text(AppLocalizations.of(context)!.yourAccount,
                           style: TextStyle(
                               color: context.palette.bannerAccent,
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.5)),
                       const SizedBox(height: 8),
-                      Text(name == null || name.isEmpty ? 'Your profile' : name,
+                      Text(
+                          name == null || name.isEmpty
+                              ? AppLocalizations.of(context)!.yourProfile
+                              : name,
                           style: TextStyle(
                               color: context.palette.onBanner,
                               fontSize: 22,
                               fontWeight: FontWeight.w700)),
                       const SizedBox(height: 6),
-                      Text(user?.email ?? 'No email available',
+                      Text(user?.email ?? AppLocalizations.of(context)!.noEmail,
                           style: TextStyle(
                               color: context.palette.bannerMuted,
                               fontSize: 13,
@@ -262,10 +243,16 @@ class _ProfileScreenState extends State<ProfileScreen>
               ]),
             ),
             const SizedBox(height: 28),
-            _heading(
-                'Preferences', 'Personal touches to make Car Alerts yours.'),
+            _heading(AppLocalizations.of(context)!.preferences,
+                AppLocalizations.of(context)!.preferencesDescription),
             _card([
               AppearanceSetting(controller: AppearanceController.instance),
+              Divider(
+                  height: 1,
+                  indent: 18,
+                  endIndent: 18,
+                  color: context.palette.divider),
+              LanguageSetting(controller: LanguageController.instance),
               Divider(
                   height: 1,
                   indent: 18,
@@ -274,19 +261,21 @@ class _ProfileScreenState extends State<ProfileScreen>
               _notificationSetting(),
             ]),
             const SizedBox(height: 28),
-            _heading('Help & feedback', 'Help shape what comes next.'),
+            _heading(AppLocalizations.of(context)!.helpFeedback,
+                AppLocalizations.of(context)!.helpDescription),
             _card([
               ListTile(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 leading:
                     Icon(Icons.forum_outlined, color: context.palette.accent),
-                title: Text('Share feedback',
+                title: Text(AppLocalizations.of(context)!.shareFeedback,
                     style: TextStyle(
                         color: context.palette.ink,
                         fontSize: 15,
                         fontWeight: FontWeight.w700)),
-                subtitle: Text('Suggest an improvement or report a problem.',
+                subtitle: Text(
+                    AppLocalizations.of(context)!.feedbackDescription,
                     style: TextStyle(
                         color: context.palette.muted,
                         fontSize: 12,
@@ -298,18 +287,22 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
             ]),
             const SizedBox(height: 28),
-            _heading('Account', 'Manage your session on this device.'),
+            _heading(AppLocalizations.of(context)!.account,
+                AppLocalizations.of(context)!.accountDescription),
             _card([
               ListTile(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                 leading: Icon(Icons.logout, color: context.palette.error),
-                title: Text(_signingOut ? 'Signing out…' : 'Sign out',
+                title: Text(
+                    _signingOut
+                        ? AppLocalizations.of(context)!.signingOut
+                        : AppLocalizations.of(context)!.signOut,
                     style: TextStyle(
                         color: context.palette.error,
                         fontSize: 15,
                         fontWeight: FontWeight.w700)),
-                subtitle: Text('Your cars stay saved to your account.',
+                subtitle: Text(AppLocalizations.of(context)!.carsStaySaved,
                     style:
                         TextStyle(color: context.palette.muted, fontSize: 12)),
                 trailing: _signingOut
@@ -324,20 +317,20 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
             ]),
             const SizedBox(height: 28),
-            _heading('Delete account',
-                'Permanently remove your account and saved data.'),
+            _heading(AppLocalizations.of(context)!.deleteAccount,
+                AppLocalizations.of(context)!.deleteDescription),
             _card([
               ListTile(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 leading: Icon(Icons.person_remove_outlined,
                     color: context.palette.error),
-                title: Text('Delete account',
+                title: Text(AppLocalizations.of(context)!.deleteAccount,
                     style: TextStyle(
                         color: context.palette.error,
                         fontSize: 15,
                         fontWeight: FontWeight.w700)),
-                subtitle: Text('This action cannot be undone.',
+                subtitle: Text(AppLocalizations.of(context)!.cannotUndo,
                     style:
                         TextStyle(color: context.palette.muted, fontSize: 12)),
                 trailing:
@@ -364,7 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Icon(Icons.directions_car_outlined,
                   color: context.palette.muted, size: 18),
               const SizedBox(width: 8),
-              Text('Car Alerts',
+              Text('CarAlerts',
                   style: TextStyle(
                       color: context.palette.muted,
                       fontWeight: FontWeight.w600,

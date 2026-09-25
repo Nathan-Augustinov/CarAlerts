@@ -1,0 +1,374 @@
+{
+  "@@locale": "en",
+  "language": "Language",
+  "languageSaveError": "Could not save language. Please try again.",
+  "makeItYours": "MAKE IT YOURS",
+  "settings": "Settings",
+  "settingsDescription": "Your account and preferences, in one place.",
+  "yourAccount": "YOUR ACCOUNT",
+  "yourProfile": "Your profile",
+  "noEmail": "No email available",
+  "preferences": "Preferences",
+  "preferencesDescription": "Personal touches to make CarAlerts yours.",
+  "helpFeedback": "Help & feedback",
+  "helpDescription": "Help shape what comes next.",
+  "shareFeedback": "Share feedback",
+  "feedbackDescription": "Suggest an improvement or report a problem.",
+  "account": "Account",
+  "accountDescription": "Manage your session on this device.",
+  "signingOut": "Signing out…",
+  "signOut": "Sign out",
+  "carsStaySaved": "Your cars stay saved to your account.",
+  "deleteAccount": "Delete account",
+  "deleteDescription": "Permanently remove your account and saved data.",
+  "cannotUndo": "This action cannot be undone.",
+  "signOutError": "Could not sign out. Please try again.",
+  "notifications": "Notifications",
+  "checking": "Checking…",
+  "statusUnavailable": "Status unavailable",
+  "reminderRetry": "Reminders will retry automatically",
+  "enabled": "Enabled",
+  "notEnabled": "Not enabled",
+  "allowReminders": "Tap to allow expiry reminders.",
+  "enableInSettings": "Tap to enable in phone settings.",
+  "permissionError": "Unable to check. Tap to retry.",
+  "notificationSettingsError": "Could not open notification settings. Please try again.",
+  "appearance": "Appearance",
+  "system": "System",
+  "light": "Light",
+  "dark": "Dark",
+  "followDevice": "Follow your device settings",
+  "alwaysLight": "Always use light appearance",
+  "alwaysDark": "Always use dark appearance",
+  "appearanceSaveError": "Could not save appearance. Please try again.",
+  "dashboard": "Dashboard",
+  "yourCars": "Your cars",
+  "noEmailAppIsAvailableInstallOrSetUpAnEmailAppThenTryAgainYourMessageIsStillHere": "No email app is available. Install or set up an email app, then try again. Your message is still here.",
+  "couldNotPrepareYourEmailPleaseTryAgainYourMessageIsStillHere": "Could not prepare your email. Please try again. Your message is still here.",
+  "makeCaralertsBetter": "Make CarAlerts better",
+  "haveAnIdeaOrSpottedAProblemWeDLoveToHearFromYou": "Have an idea or spotted a problem? We’d love to hear from you.",
+  "whatWouldYouLikeToShare": "What would you like to share?",
+  "tellUsWhatHappened": "Tell us what happened",
+  "tellUsAboutYourIdea": "Tell us about your idea",
+  "whatWentWrongWhatWereYouDoingAndWhatDidYouExpectToHappen": "What went wrong? What were you doing, and what did you expect to happen?",
+  "whatCouldWeImproveAndHowWouldItHelpYou": "What could we improve, and how would it help you?",
+  "pleaseWriteAMessageBeforeContinuing": "Please write a message before continuing.",
+  "toHelpUsUnderstandYourFeedbackYourPhoneModelOsVersionAndAppVersionAreAutomaticallyAddedAtTheEndOfTheEmail": "To help us understand your feedback, your phone model, OS version, and app version are automatically added at the end of the email.",
+  "preparingEmail": "Preparing email…",
+  "continueToEmail": "Continue to email",
+  "reviewAndSendFromYourEmailApp": "Review and send from your email app.",
+  "enterAValidEmailAddress": "Enter a valid email address.",
+  "emailOrPasswordIsIncorrectTryAgainOrResetYourPassword": "Email or password is incorrect. Try again or reset your password.",
+  "thisEmailAlreadyHasAnAccountSignInOrResetYourPassword": "This email already has an account. Sign in or reset your password.",
+  "chooseAStrongerPasswordThatMeetsTheAccountPasswordRequirements": "Choose a stronger password that meets the account password requirements.",
+  "thisAccountHasBeenDisabled": "This account has been disabled.",
+  "tooManyAttemptsPleaseWaitAndTryAgain": "Too many attempts. Please wait and try again.",
+  "checkYourConnectionAndTryAgain": "Check your connection and try again.",
+  "thisSignInMethodIsNotAvailableRightNow": "This sign-in method is not available right now.",
+  "unableToCompleteYourRequestPleaseTryAgain": "Unable to complete your request. Please try again.",
+  "ifAnAccountExistsForThisEmailYouLlReceiveAPasswordResetLink": "If an account exists for this email, you’ll receive a password reset link.",
+  "emailAddress": "Email address",
+  "password": "Password",
+  "atLeastCharacters": "At least 6 characters",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "enterYourPassword": "Enter your password.",
+  "useAtLeastCharacters": "Use at least 6 characters.",
+  "confirmPassword": "Confirm password",
+  "confirmYourPassword": "Confirm your password.",
+  "passwordsDoNotMatch": "Passwords do not match.",
+  "sendingResetLink": "Sending reset link…",
+  "forgotPassword": "Forgot password?",
+  "pleaseWait": "Please wait…",
+  "createAccount": "Create account",
+  "signIn": "Sign in",
+  "alreadyHaveAnAccountSignIn": "Already have an account? Sign in",
+  "newHereCreateAnAccount": "New here? Create an account",
+  "or": "or",
+  "aLittlePeaceOfMind": "A LITTLE PEACE OF MIND",
+  "lessToRememberMoreRoadAhead": "Less to remember.\nMore road ahead.",
+  "insuranceInspectionsVignettes": "Insurance · Inspections · Vignettes",
+  "createYourAccount": "Create your account",
+  "welcome": "Welcome",
+  "signingIn": "Signing in…",
+  "signInWithGoogle": "Sign in with Google",
+  "thisCarAndItsSavedExpiryDatesWillBeRemoved": "This car and its saved expiry dates will be removed.",
+  "keepCar": "Keep car",
+  "remove": "Remove",
+  "couldNotRemoveTheCarPleaseTryAgain": "Could not remove the car. Please try again.",
+  "yourGarage": "YOUR GARAGE",
+  "everyCarEveryDeadlineInOnePlace": "Every car. Every deadline. In one place.",
+  "noUpcomingDeadlines": "No upcoming deadlines",
+  "expiredOrDueWithinTheNextDays": "Expired or due within the next 30 days",
+  "unableToLoadYourCars": "Unable to load your cars",
+  "checkYourConnectionAndReopenThisPage": "Check your connection and reopen this page.",
+  "yourGarageStartsHere": "Your garage starts here",
+  "nothingNeedsAttention": "Nothing needs attention",
+  "addYourFirstCarToKeepInsuranceInspectionsAndVignettesTogether": "Add your first car to keep insurance, inspections and vignettes together.",
+  "noSavedDatesAreExpiredOrDueInTheNextDays": "No saved dates are expired or due in the next 30 days.",
+  "addCar": "Add car",
+  "addExpiryDatesToStartTrackingThisCar": "Add expiry dates to start tracking this car.",
+  "checkDate": "Check date",
+  "dueToday": "Due today",
+  "upToDate": "Up to date",
+  "updateThisExpiryDate": "Update this expiry date",
+  "removeCar": "Remove car",
+  "manageCar": "Manage car",
+  "atAGlance": "AT A GLANCE",
+  "helloThere": "Hello there",
+  "aLittlePlanningASmootherJourney": "A little planning. A smoother journey.",
+  "makeRoomForPeaceOfMind": "Make room for peace of mind",
+  "youReAheadOfYourDeadlines": "You’re ahead of your deadlines",
+  "keepTrackOfInsuranceInspectionsAndVignettesForEveryCar": "Keep track of insurance, inspections and vignettes for every car.",
+  "addYourFirstCar": "Add your first car",
+  "viewYourGarage": "View your garage",
+  "overdue": "Overdue",
+  "dueInDays": "Due in {count}d",
+  "carTracked": "Car tracked",
+  "carsTracked": "Cars tracked",
+  "yourDeadlines": "Your deadlines",
+  "theMostUrgentDatesComeFirstTapToManage": "The most urgent dates come first. Tap to manage.",
+  "upcoming": "Upcoming",
+  "all": "All",
+  "unableToLoadYourDashboard": "Unable to load your dashboard",
+  "tryAgain": "Try again",
+  "noDeadlinesYet": "No deadlines yet",
+  "yourSavedExpiryDatesWillAppearHereOnceYouAddACar": "Your saved expiry dates will appear here once you add a car.",
+  "openYourGarageAndAddExpiryDatesToYourCars": "Open your garage and add expiry dates to your cars.",
+  "takeALookAtUpcomingToPlanYourNextRenewal": "Take a look at Upcoming to plan your next renewal.",
+  "yourSavedDatesAreInThePastUpdateThemAfterRenewing": "Your saved dates are in the past. Update them after renewing.",
+  "deleteYourAccount": "Delete your account?",
+  "keepAccount": "Keep account",
+  "deletePermanently": "Delete permanently",
+  "verifyWithGoogleDelete": "Verify with Google & delete",
+  "verificationCancelledYourAccountHasNotBeenDeleted": "Verification cancelled. Your account has not been deleted.",
+  "couldNotVerifyYourGoogleAccountPleaseTryAgain": "Could not verify your Google account. Please try again.",
+  "couldNotDeleteYourAccountCheckYourConnectionAndTryAgain": "Could not delete your account. Check your connection and try again.",
+  "yourPasswordWasNotAcceptedPleaseCheckItAndTryAgain": "Your password was not accepted. Please check it and try again.",
+  "pleaseSignInAgainThenReturnHereToDeleteYourAccount": "Please sign in again, then return here to delete your account.",
+  "thisSignInMethodCannotBeVerifiedHerePleaseContactSupport": "This sign-in method cannot be verified here. Please contact support.",
+  "couldNotVerifyYourAccountPleaseSignInAgainAndRetry": "Could not verify your account. Please sign in again and retry.",
+  "permanentlyDeleteYourAccount": "Permanently delete your account",
+  "thisCannotBeUndone": "This cannot be undone.",
+  "currentPassword": "Current password",
+  "verifyYourIdentityToDeleteThisAccount": "Verify your identity to delete this account.",
+  "enterYourCurrentPassword": "Enter your current password.",
+  "deletingAccount": "Deleting account…",
+  "keepTheAppOpenWhileDeletionFinishes": "Keep the app open while deletion finishes.",
+  "addACar": "Add a car",
+  "editCar": "Edit car",
+  "aFewDetailsNowFewerSurprisesLater": "A few details now. Fewer surprises later.",
+  "keepYourCarSDetailsAndDeadlinesUpToDate": "Keep your car’s details and deadlines up to date.",
+  "yourCarCovered": "Your car, covered",
+  "carDetails": "Car details",
+  "registrationNumber": "Registration number",
+  "eGArXyz": "e.g. AR00XYZ",
+  "useTheNumberOnYourLicencePlate": "Use the number on your licence plate.",
+  "enterYourRegistrationNumber": "Enter your registration number.",
+  "useARegistrationNumberWithoutSlashes": "Use a registration number without slashes.",
+  "documentsExpiryDates": "Documents & expiry dates",
+  "chooseWhatToTrackThenAddEachExpiryDate": "Choose what to track, then add each expiry date.",
+  "carInsurance": "Car insurance",
+  "insuranceCover": "Insurance cover",
+  "carInspection": "Car inspection",
+  "roadworthinessCheck": "Roadworthiness check",
+  "roadVignettes": "ROAD VIGNETTES",
+  "romanianVignette": "Romanian vignette",
+  "romania": "Romania",
+  "hungarianVignette": "Hungarian vignette",
+  "hungary": "Hungary",
+  "austrianVignette": "Austrian vignette",
+  "austria": "Austria",
+  "otherExpiryDates": "Other expiry dates",
+  "trackParkingPermitsWarrantiesAndMoreUpToPerCar": "Track parking permits, warranties and more. Up to 10 per car.",
+  "youCanAddOrUpdateExpiryDatesAtAnyTime": "You can add or update expiry dates at any time.",
+  "saving": "Saving…",
+  "saveCar": "Save car",
+  "saveChanges": "Save changes",
+  "expiryDate": "EXPIRY DATE",
+  "chooseADate": "Choose a date",
+  "expiryName": "Expiry name",
+  "eGParkingPermit": "e.g. Parking permit",
+  "enterAnExpiryName": "Enter an expiry name.",
+  "useCharactersOrFewer": "Use 50 characters or fewer.",
+  "useADifferentExpiryName": "Use a different expiry name.",
+  "removeExpiry": "Remove expiry",
+  "expiryDateText": "Expiry date",
+  "chooseExpiryDate": "Choose expiry date",
+  "pleaseEnterTheRegistrationNumber": "Please enter the registration number!",
+  "pleaseSelectTheInsuranceExpirationDate": "Please select the insurance expiration date!",
+  "pleaseSelectTheInspectionExpirationDate": "Please select the inspection expiration date!",
+  "pleaseSelectTheRomanianVignetteExpirationDate": "Please select the romanian vignette expiration date!",
+  "pleaseSelectTheHungarianVignetteExpirationDate": "Please select the hungarian vignette expiration date!",
+  "pleaseSelectTheAustrianVignetteExpirationDate": "Please select the austrian vignette expiration date!",
+  "couldNotSaveYourCarPleaseTryAgain": "Could not save your car. Please try again.",
+  "carSavedRemindersWillRetryAutomatically": "Car saved. Reminders will retry automatically.",
+  "carSavedNotificationsAreDisabled": "Car saved. Notifications are disabled.",
+  "carSaved": "Car saved.",
+  "couldNotOpenSettings": "Could not open Settings.",
+  "error": "Error",
+  "success": "Success",
+  "ok": "OK",
+  "signInToTheReminderSAccountToViewThisCar": "Sign in to the reminder’s account to view this car.",
+  "thisCarHasBeenRemoved": "This car has been removed.",
+  "couldNotOpenThisCarPleaseCheckYourCars": "Could not open this car. Please check Your cars.",
+  "chooseAnExpiryDate": "Choose an expiry date.",
+  "chooseTodayOrAFutureDate": "Choose today or a future date.",
+  "suggestAnImprovement": "Suggest an improvement",
+  "reportAProblem": "Report a problem",
+  "removeNamedCar": "Remove {name}?",
+  "@removeNamedCar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "helloName": "Hello, {name}",
+  "@helloName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "carsNeedAttention": "{count, plural, one{1 car needs attention} other{{count} cars need attention}}",
+  "@carsNeedAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deadlinesNeedAttention": "{count, plural, one{1 deadline needs attention} other{{count} deadlines need attention}}",
+  "@deadlinesNeedAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "documentsTracked": "{count, plural, one{1 document tracked} other{{count} documents tracked}}",
+  "@documentsTracked": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "itemsTracked": "{count, plural, one{1 item tracked} other{{count} items tracked}}",
+  "@itemsTracked": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allCarsCount": "All cars · {count}",
+  "@allCarsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attentionCount": "Needs attention · {count}",
+  "@attentionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daysOverdue": "{count}d overdue",
+  "@daysOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@dueInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addExpiryCount": "Add expiry ({count}/10)",
+  "@addExpiryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "documentExpiry": "{title} expiry",
+  "@documentExpiry": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewDates": "Review expired documents and dates due in the next 30 days.",
+  "invalidDates": "{count, plural, =0{} one{ 1 saved date also needs checking.} other{ {count} saved dates also need checking.}}",
+  "@invalidDates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteConfirmation": "Your account, all saved cars, and their expiry dates will be permanently deleted. This cannot be undone.",
+  "deletionDetails": "This removes your CarAlerts account, saved cars, expiry dates, and saved account settings. Reminders on this device will be cancelled.",
+  "googleDeletion": "Google will ask you to choose an account to confirm it’s you. Select {email}. After verification, your CarAlerts account will be permanently deleted. Your Google account will not be deleted.",
+  "@googleDeletion": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "googleAccountAbove": "the Google account shown above",
+  "accountBeingDeleted": "the account you are deleting",
+  "differentAccount": "That is a different account. Select {email} to continue. Nothing has been deleted.",
+  "@differentAccount": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "emailSubject": "Email subject: {subject}",
+  "@emailSubject": {
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "expiry": "Expiry",
+  "document": "Document",
+  "invalidDate": "Invalid Date",
+  "expiresTomorrow": "Expires tomorrow.",
+  "expiresInDays": "Expires in {count} days.",
+  "@expiresInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expiryNotifications": "Expiry Notifications",
+  "remindersDescription": "Reminders for car expiry dates",
+  "splashTagline": "Every car. Every deadline.",
+  "dueInThirtyDays": "Due in 30 days",
+  "deviceDetails": "Device details",
+  "phoneModel": "Phone model",
+  "osVersion": "OS version",
+  "appVersion": "App version",
+  "unavailable": "Unavailable",
+  "languageEnglish": "English",
+  "languageRomanian": "Romanian"
+}
