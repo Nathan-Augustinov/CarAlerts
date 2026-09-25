@@ -1,3 +1,4 @@
+import '../services/crash_reporting_service.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -73,6 +74,7 @@ class _SignInScreenState extends State<SignInScreen> {
       _error = null;
       _notice = null;
     });
+    CrashReportingService.instance.breadcrumb('auth: $operation started');
     try {
       if (operation == 'reset') {
         await _authService.resetPassword(_email.text);
@@ -92,14 +94,20 @@ class _SignInScreenState extends State<SignInScreen> {
           // report that a successfully authenticated account failed to sign in.
           try {
             await _settingsService.initializeUserSettings(user);
-          } catch (_) {
+          } catch (error, stack) {
+            CrashReportingService.instance
+                .report(error, stack, operation: 'initialize_settings');
             debugPrint('User settings initialization could not complete.');
           }
         }
       }
-    } on FirebaseAuthException catch (error) {
+    } on FirebaseAuthException catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'auth_$operation');
       if (mounted) setState(() => _error = _authError(error));
-    } catch (_) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'auth_$operation');
       if (mounted) {
         setState(() => _error = AppLocalizations.of(context)!
             .unableToCompleteYourRequestPleaseTryAgain);

@@ -1,3 +1,4 @@
+import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../l10n/localized_content.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
@@ -632,6 +633,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
           : null,
     };
 
+    CrashReportingService.instance.breadcrumb('car: save_started');
     try {
       carData = await CarService().save(
         userId: currentUserId,
@@ -653,6 +655,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
       if (mounted) _showErrorPopUp(error.message, errorText);
       return;
     } on FirebaseException catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'save_car');
       debugPrint(
           'Car save failed [${error.plugin}/${error.code}]: ${error.message}');
       debugPrintStack(stackTrace: stack);
@@ -663,6 +667,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
       }
       return;
     } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'save_car');
       debugPrint('Car save failed: $error');
       debugPrintStack(stackTrace: stack);
       if (mounted) {
@@ -672,13 +678,16 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
       }
       return;
     }
+    CrashReportingService.instance.breadcrumb('car: save_succeeded');
     String? reminderWarning;
     bool notificationsOff = false;
     try {
       if (Car.fromMap(carData, carName).allItems.isNotEmpty) {
         await NotificationPermissionService().requestIfNotAsked();
       }
-    } catch (_) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'request_notification_permission');
       // Permission errors must not prevent reconciliation or undo the save.
     }
     final result = await NotificationsService.instance.refresh(
@@ -707,7 +716,9 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
               onPressed: () async {
                 try {
                   await NotificationPermissionService().openSettings();
-                } catch (_) {
+                } catch (error, stack) {
+                  CrashReportingService.instance.report(error, stack,
+                      operation: 'open_notification_settings');
                   if (messenger.mounted) {
                     messenger.showSnackBar(SnackBar(
                         content: Text(AppLocalizations.of(context)!

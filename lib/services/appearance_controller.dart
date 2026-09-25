@@ -1,3 +1,4 @@
+import 'crash_reporting_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -21,9 +22,13 @@ class AppearanceController extends ChangeNotifier {
         'dark' => ThemeMode.dark,
         _ => ThemeMode.system,
       };
-    } on PlatformException {
+    } on PlatformException catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'load_appearance');
       _mode = ThemeMode.system;
-    } on MissingPluginException {
+    } on MissingPluginException catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'load_appearance');
       _mode = ThemeMode.system;
     }
     notifyListeners();

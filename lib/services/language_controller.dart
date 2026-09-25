@@ -1,17 +1,23 @@
+import '../l10n/device_language.dart';
+import 'crash_reporting_service.dart';
 import 'user_settings_service.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-/// Account language; absent and unsupported values use English.
+/// Saved account preferences override the initial phone-based language.
 class LanguageController extends ChangeNotifier {
-  LanguageController({FirebaseFirestore? firestore}) : _firestore = firestore;
+  LanguageController({FirebaseFirestore? firestore, Locale? phoneLocale})
+      : _firestore = firestore,
+        _initialLocale = deviceLanguage(phoneLocale),
+        _locale = deviceLanguage(phoneLocale);
   static final instance = LanguageController();
   final FirebaseFirestore? _firestore;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _subscription;
   String? _user;
   int _binding = 0;
-  Locale _locale = const Locale('en');
+  final Locale _initialLocale;
+  Locale _locale;
   bool _saving = false;
   Locale get locale => _locale;
   bool get saving => _saving;
@@ -28,19 +34,25 @@ class LanguageController extends ChangeNotifier {
     _subscription?.cancel();
     final binding = ++_binding;
     _user = uid;
-    _locale = const Locale('en');
+    _locale = _initialLocale;
     _saving = false;
     notifyListeners();
     if (uid == null) return;
     unawaited(UserSettingsService(firestore: _firestore)
-        .initializeForUser(uid)
-        .catchError((Object _) {/* Retry on the next sign-in when online. */}));
+        .initializeForUser(uid, initialLanguage: _initialLocale.languageCode)
+        .catchError((Object error, StackTrace stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'initialize_language');
+    }));
     _subscription = _settings(uid).snapshots().listen((snapshot) {
       if (_binding != binding) return;
       final code = snapshot.data()?['language'];
-      _locale = Locale(code == 'ro' ? 'ro' : 'en');
+      _locale =
+          code == null ? _initialLocale : Locale(code == 'ro' ? 'ro' : 'en');
       notifyListeners();
-    }, onError: (Object error) {
+    }, onError: (Object error, StackTrace stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'load_language');
       // Retain the last known language while offline or unable to read.
     });
   }

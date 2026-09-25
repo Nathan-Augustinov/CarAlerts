@@ -1,3 +1,4 @@
+import 'crash_reporting_service.dart';
 import 'package:flutter/widgets.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/localized_content.dart';
@@ -158,9 +159,12 @@ class ReminderCoordinator {
 
   Future<ReminderStatus> _refresh(String? savedUser, String? savedCar,
       String? renamedFrom, Map<String, dynamic>? savedDates) async {
+    var stage = 'initialize';
     try {
+      CrashReportingService.instance.breadcrumb('reminders: refresh_started');
       await backend.initialize();
       final user = backend.user;
+      stage = 'read_pending';
       final pending = await backend.pending();
       // Account isolation precedes fetching: a failed fetch must not leave
       // another user's private reminders on this device.
@@ -174,6 +178,7 @@ class ReminderCoordinator {
           pending.remove(entry.key);
         }
       }
+      stage = 'load_history';
       final history = await backend.loadHistory();
       history.removeWhere((key, state) =>
           state == 'queued' && (jsonDecode(key) as List).first != user);
@@ -200,6 +205,7 @@ class ReminderCoordinator {
           }
         }
       }
+      stage = 'timezone';
       final zone = await backend.timezone();
       if (savedUser == user && savedCar != null && savedDates != null) {
         for (final reminder in lateReminders(
@@ -211,14 +217,18 @@ class ReminderCoordinator {
       // Persist intent before permission checks/fetches so failures can retry.
       await backend.saveHistory(history);
       final enabled = await backend.enabled();
+      CrashReportingService.instance.breadcrumb(
+          'reminders: permission ${enabled ? 'enabled' : 'disabled'}');
       if (!enabled) {
         for (final id in pending.keys) {
           await backend.cancel(id);
         }
         return ReminderStatus.disabled;
       }
+      stage = 'fetch_cars';
       final cars = await backend.cars(user);
       if (backend.user != user) return ReminderStatus.ready;
+      stage = 'plan';
       final desired = planReminders(user, cars, zone, now(),
           limit: backend.limit, language: backend.language);
       final late = <Reminder>[];
@@ -231,6 +241,7 @@ class ReminderCoordinator {
       history.removeWhere(
           (key, state) => state == 'queued' && !eligible.contains(key));
       await backend.saveHistory(history);
+      stage = 'persist_registry';
       final ids = await backend.loadIds();
       final occupied = {...ids.values, ...pending.keys};
       var next = occupied.fold<int>(0, (a, b) => a > b ? a : b) + 1;
@@ -241,11 +252,13 @@ class ReminderCoordinator {
         }
       }
       await backend.saveIds(ids);
+      stage = 'cancel_obsolete';
       final wanted = {for (final r in desired) ids[r.key]!: r};
       for (final entry in pending.entries) {
         if (backend.user != user) return ReminderStatus.ready;
         if (!wanted.containsKey(entry.key)) await backend.cancel(entry.key);
       }
+      stage = 'schedule';
       for (final entry in wanted.entries) {
         if (backend.user != user) return ReminderStatus.ready;
         if (pending[entry.key] != entry.value.payload) {
@@ -258,6 +271,7 @@ class ReminderCoordinator {
           await backend.saveHistory(history);
         }
       }
+      stage = 'show_catch_up';
       for (final reminder in late) {
         if (backend.user != user) return ReminderStatus.ready;
         // A slow fetch/scheduling batch can cross midnight.
@@ -280,8 +294,11 @@ class ReminderCoordinator {
         }
         if (backend.user != user) await backend.cancel(ids[reminder.key]!);
       }
+      CrashReportingService.instance.breadcrumb('reminders: refresh_succeeded');
       return ReminderStatus.ready;
-    } catch (_) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'reminders_$stage');
       // No success marker: the next refresh retries partial work.
       return ReminderStatus.failed;
     }

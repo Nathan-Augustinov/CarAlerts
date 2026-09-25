@@ -1,3 +1,4 @@
+import '../services/crash_reporting_service.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +36,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     try {
       await _service.compose(_type, _message.text,
           localizations: AppLocalizations.of(context)!);
-    } catch (error) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'compose_feedback');
       if (!mounted) return;
       setState(() => _error = error is PlatformException &&
               error.code == 'email_unavailable'

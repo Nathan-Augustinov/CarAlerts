@@ -1,3 +1,4 @@
+import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../l10n/localized_content.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/calendar_day_refresh.dart';
@@ -38,8 +39,11 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Future<void> _edit([Car? car]) async {
-    await Navigator.push(context,
-        MaterialPageRoute(builder: (_) => AddOrEditCarScreen(car: car)));
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            settings: const RouteSettings(name: 'car_editor'),
+            builder: (_) => AddOrEditCarScreen(car: car)));
     if (mounted) setState(() {});
   }
 
@@ -58,6 +62,11 @@ class _MyHomePageState extends State<MyHomePage>
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: _stream,
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              CrashReportingService.instance.report(
+                  snapshot.error!, snapshot.stackTrace ?? StackTrace.current,
+                  operation: 'home_page_screen_load');
+            }
             final cars = snapshot.data?.docs
                     .map((doc) => Car.fromMap(doc.data(), doc.id))
                     .toList() ??

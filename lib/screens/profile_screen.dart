@@ -1,3 +1,5 @@
+import '../widgets/crashlytics_test_controls.dart';
+import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../services/language_controller.dart';
 import '../widgets/language_setting.dart';
 import '../l10n/app_localizations.dart';
@@ -60,7 +62,9 @@ class _ProfileScreenState extends State<ProfileScreen>
         _checkingPermission = false;
         _permissionError = null;
       });
-    } catch (_) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'check_notification_permission');
       if (!mounted) return;
       setState(() {
         _permission = null;
@@ -82,7 +86,9 @@ class _ProfileScreenState extends State<ProfileScreen>
         await _permissionService.openSettings();
       }
       await _refreshPermission();
-    } catch (_) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'request_notification_permission');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(AppLocalizations.of(context)!.notificationSettingsError),
@@ -157,7 +163,9 @@ class _ProfileScreenState extends State<ProfileScreen>
     try {
       // The app's authentication listener shows sign-in after sign-out.
       await AuthenticationService().signOutFromGoogle();
-    } catch (_) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'sign_out');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(AppLocalizations.of(context)!.signOutError),
@@ -180,6 +188,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
           children: [
+            if (CrashReportingService.testControls)
+              const CrashlyticsTestControls(),
             Text(AppLocalizations.of(context)!.makeItYours,
                 style: TextStyle(
                     color: context.palette.accent,
@@ -283,6 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 trailing:
                     Icon(Icons.chevron_right, color: context.palette.muted),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                    settings: const RouteSettings(name: 'feedback'),
                     builder: (_) => const FeedbackScreen())),
               ),
             ]),
@@ -340,6 +351,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     : () {
                         final service = AccountDeletionService();
                         Navigator.of(context).push(MaterialPageRoute<void>(
+                          settings: const RouteSettings(name: 'delete_account'),
                           builder: (_) => DeleteAccountScreen(
                             email: user.email,
                             requiresPassword: user.providerData.any(

@@ -1,3 +1,4 @@
+import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../services/appearance_controller.dart';
@@ -87,7 +88,9 @@ class _AppearanceSelectorState extends State<_AppearanceSelector> {
                       try {
                         await controller.select(value);
                         if (context.mounted) Navigator.of(context).pop();
-                      } catch (_) {
+                      } catch (error, stack) {
+                        CrashReportingService.instance
+                            .report(error, stack, operation: 'save_appearance');
                         if (context.mounted) {
                           setState(() => _error = AppLocalizations.of(context)!
                               .appearanceSaveError);

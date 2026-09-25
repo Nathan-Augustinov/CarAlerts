@@ -1,3 +1,4 @@
+import 'crash_reporting_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -40,6 +41,7 @@ class AccountDeletionService {
     _running = true;
     var cleanupStarted = false;
     var stage = 'verification';
+    CrashReportingService.instance.breadcrumb('account: deletion_started');
     try {
       await _reauthenticate(user, password);
       _checkUser(user.uid);
@@ -70,12 +72,16 @@ class AccountDeletionService {
           .any((provider) => provider.providerId == 'google.com')) {
         try {
           await _clearGoogleSession();
-        } catch (_) {
+        } catch (error, stack) {
+          CrashReportingService.instance
+              .report(error, stack, operation: 'clear_google_session');
           // The Firebase account is already deleted; provider cache cleanup
           // must not present a successfully deleted account as a failure.
         }
       }
-    } catch (error) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'delete_account: $stage');
       final code = error is FirebaseException ? error.code : error.runtimeType;
       debugPrint('Account deletion failed during $stage ($code).');
       if (cleanupStarted) {

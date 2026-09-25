@@ -1,3 +1,5 @@
+import 'services/crash_navigation_observer.dart';
+import 'services/crash_reporting_service.dart';
 import 'l10n/app_localizations.dart';
 import 'services/language_controller.dart';
 import 'package:flutter/services.dart';
@@ -20,10 +22,14 @@ import 'screens/splash_screen.dart';
 GlobalKey<MainScreenState> mainScreenKey = GlobalKey();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppearanceController.instance.load();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  final reporting = CrashReportingService.instance;
+  await reporting.initialize();
+  await reporting.setUser(FirebaseAuth.instance.currentUser?.uid);
+  reporting.installHandlers();
+  await AppearanceController.instance.load();
   runApp(const MyApp());
 }
 
@@ -35,6 +41,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  final _crashNavigation = CrashNavigationObserver();
   final _navigator = GlobalKey<NavigatorState>();
   final _messenger = GlobalKey<ScaffoldMessengerState>();
   StreamSubscription<User?>? _auth;
@@ -49,6 +56,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _notifications.onTap = _openReminder;
     LanguageController.instance.addListener(_languageChanged);
     _auth = _authState.listen((user) {
+      if (user == null) {
+        CrashNavigationObserver.homeScreen = 'sign_in';
+        unawaited(CrashReportingService.instance.screen('sign_in'));
+      }
+      unawaited(CrashReportingService.instance.setUser(user?.uid));
+      unawaited(CrashReportingService.instance
+          .breadcrumb(user == null ? 'auth: signed_out' : 'auth: signed_in'));
       LanguageController.instance.bindUser(user?.uid);
       _navigator.currentState?.popUntil((route) => route.isFirst);
       _refresh();
@@ -72,6 +86,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _openReminder(String? payload) async {
+    unawaited(CrashReportingService.instance.breadcrumb('reminder: opened'));
     try {
       final data = jsonDecode(payload ?? '') as Map;
       final user = FirebaseAuth.instance.currentUser?.uid;
@@ -94,9 +109,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         return;
       }
       _navigator.currentState?.push(MaterialPageRoute(
+          settings: const RouteSettings(name: 'car_editor'),
           builder: (_) =>
               AddOrEditCarScreen(car: Car.fromMap(doc.data()!, doc.id))));
-    } catch (_) {
+    } catch (error, stack) {
+      unawaited(CrashReportingService.instance
+          .report(error, stack, operation: 'open_reminder'));
       _message(lookupAppLocalizations(LanguageController.instance.locale)
           .couldNotOpenThisCarPleaseCheckYourCars);
     }
@@ -126,6 +144,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           [AppearanceController.instance, LanguageController.instance]),
       builder: (context, _) => MaterialApp(
         navigatorKey: _navigator,
+        navigatorObservers: [_crashNavigation],
         scaffoldMessengerKey: _messenger,
         title: 'CarAlerts',
         locale: LanguageController.instance.locale,

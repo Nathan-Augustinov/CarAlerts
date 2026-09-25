@@ -1,3 +1,4 @@
+import '../l10n/device_language.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -9,7 +10,11 @@ class UserSettingsService {
   Future<void> initializeUserSettings(User user) => initializeForUser(user.uid);
 
   /// Backfill defaults without overwriting another device's saved preferences.
-  Future<void> initializeForUser(String uid) async {
+  Future<void> initializeForUser(String uid, {String? initialLanguage}) async {
+    final language = initialLanguage ?? deviceLanguage().languageCode;
+    if (!const ['en', 'ro'].contains(language)) {
+      throw ArgumentError.value(language, 'initialLanguage');
+    }
     final ref = _firestore
         .collection('users')
         .doc(uid)
@@ -20,7 +25,7 @@ class UserSettingsService {
       final data = snapshot.data();
       final defaults = <String, dynamic>{
         if (!snapshot.exists) 'darkMode': false,
-        if (data?['language'] == null) 'language': 'en',
+        if (data?['language'] == null) 'language': language,
       };
       if (defaults.isNotEmpty) {
         if (snapshot.exists) {
