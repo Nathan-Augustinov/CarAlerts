@@ -54,6 +54,11 @@ class AuthenticationService {
     } else if (providers.contains('google.com')) {
       await _googleInitialization;
       final account = await _googleSignIn.authenticate();
+      final googleProvider = user.providerData
+          .firstWhere((provider) => provider.providerId == 'google.com');
+      if (account.id != googleProvider.uid) {
+        throw FirebaseAuthException(code: 'user-mismatch');
+      }
       credential = GoogleAuthProvider.credential(
           idToken: account.authentication.idToken);
     } else {
