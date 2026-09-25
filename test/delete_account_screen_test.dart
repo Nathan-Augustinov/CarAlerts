@@ -30,6 +30,7 @@ Future<void> openScreen(
 Future<void> requestDeletion(WidgetTester tester) async {
   final button = find.widgetWithText(FilledButton, 'Delete account');
   await tester.ensureVisible(button);
+  await tester.pumpAndSettle();
   await tester.tap(button);
   await tester.pumpAndSettle();
 }
@@ -86,7 +87,7 @@ void main() {
     expect(find.byType(TextFormField), findsNothing);
     await requestDeletion(tester);
     expect(calls, 0);
-    await tester.tap(find.text('Delete permanently'));
+    await tester.tap(find.text('Verify with Google & delete'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(calls, 1);
@@ -98,6 +99,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Open deletion'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('different Google account leaves deletion available to retry',
+      (tester) async {
+    await openScreen(
+        tester, (_) async => throw FirebaseAuthException(code: 'user-mismatch'),
+        password: false);
+    expect(find.textContaining('Select test@example.com.'), findsOneWidget);
+    await requestDeletion(tester);
+    expect(find.textContaining('Select test@example.com.'), findsOneWidget);
+    await tester.tap(find.text('Verify with Google & delete'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('That is a different account.'), findsOneWidget);
+    await tester.scrollUntilVisible(find.byType(FilledButton), 100);
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNotNull);
   });
 
   testWidgets(

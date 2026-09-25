@@ -51,7 +51,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: context.palette.error),
-            child: const Text('Delete permanently'),
+            child: Text(widget.requiresPassword
+                ? 'Delete permanently'
+                : 'Verify with Google & delete'),
           ),
         ],
       ),
@@ -90,12 +92,22 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     }
   }
 
+  String get _googleVerification =>
+      'Google will ask you to choose an account to confirm it’s you. '
+      'Select ${widget.email ?? 'the Google account shown above'}. '
+      'After verification, your Car Alerts account will be permanently deleted. '
+      'Your Google account will not be deleted.';
+
   String _authError(String code) => switch (code) {
         'invalid-credential' ||
         'wrong-password' ||
         'missing-password' =>
-          'Your password was not accepted. Please check it and try again.',
-        'user-mismatch' => 'Please verify with the account you are deleting.',
+          widget.requiresPassword
+              ? 'Your password was not accepted. Please check it and try again.'
+              : 'Could not verify your Google account. Please try again.',
+        'user-mismatch' =>
+          'That is a different account. Select ${widget.email ?? 'the account you are deleting'} '
+              'to continue. Nothing has been deleted.',
         'requires-recent-login' =>
           'Please sign in again, then return here to delete your account.',
         'network-request-failed' => 'Check your connection and try again.',
@@ -181,8 +193,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                               : null,
                         )
                       else
-                        Text(
-                            'You’ll verify your Google account before deletion.',
+                        Text(_googleVerification,
                             style: TextStyle(
                                 color: context.palette.muted, height: 1.5)),
                       if (_error != null) ...[
