@@ -1,3 +1,6 @@
+import '../l10n/localized_content.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/calendar_day_refresh.dart';
 import '../theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +18,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with WidgetsBindingObserver, CalendarDayRefresh<MyHomePage> {
   _DeadlineFilter _filter = _DeadlineFilter.attention;
   late Stream<QuerySnapshot<Map<String, dynamic>>> _stream;
 
@@ -89,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('AT A GLANCE',
+                      Text(AppLocalizations.of(context)!.atAGlance,
                           style: TextStyle(
                               color: context.palette.accent,
                               fontSize: 11,
@@ -98,15 +102,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       const SizedBox(height: 10),
                       Text(
                           name == null || name.isEmpty
-                              ? 'Hello there'
-                              : 'Hello, $name',
+                              ? AppLocalizations.of(context)!.helloThere
+                              : AppLocalizations.of(context)!.helloName(name),
                           style: TextStyle(
                               color: context.palette.ink,
                               fontSize: 34,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -1)),
                       const SizedBox(height: 6),
-                      Text('A little planning. A smoother journey.',
+                      Text(
+                          AppLocalizations.of(context)!
+                              .aLittlePlanningASmootherJourney,
                           style: TextStyle(
                               color: context.palette.muted, fontSize: 14)),
                       if (snapshot.hasData && !snapshot.hasError) ...[
@@ -126,10 +132,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                 const SizedBox(height: 18),
                                 Text(
                                     deadlines.isEmpty
-                                        ? 'Make room for peace of mind'
+                                        ? AppLocalizations.of(context)!
+                                            .makeRoomForPeaceOfMind
                                         : attention > 0
-                                            ? '$attention ${attention == 1 ? 'deadline needs' : 'deadlines need'} attention'
-                                            : 'You’re ahead of your deadlines',
+                                            ? AppLocalizations.of(context)!
+                                                .deadlinesNeedAttention(
+                                                    attention)
+                                            : AppLocalizations.of(context)!
+                                                .youReAheadOfYourDeadlines,
                                     style: TextStyle(
                                         color: context.palette.onBanner,
                                         fontSize: 23,
@@ -137,10 +147,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                 const SizedBox(height: 8),
                                 Text(
                                     deadlines.isEmpty
-                                        ? 'Keep track of insurance, inspections and vignettes for every car.'
+                                        ? AppLocalizations.of(context)!
+                                            .keepTrackOfInsuranceInspectionsAndVignettesForEveryCar
                                         : attention > 0
-                                            ? 'Review expired documents and dates due in the next 30 days.${invalid > 0 ? ' $invalid saved dates also need checking.' : ''}'
-                                            : 'No saved dates are expired or due in the next 30 days.',
+                                            ? '${AppLocalizations.of(context)!.reviewDates}${AppLocalizations.of(context)!.invalidDates(invalid)}'
+                                            : AppLocalizations.of(context)!
+                                                .noSavedDatesAreExpiredOrDueInTheNextDays,
                                     style: TextStyle(
                                         color: context.palette.bannerMuted,
                                         fontSize: 13,
@@ -162,8 +174,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                           : Icons.arrow_forward,
                                       size: 18),
                                   label: Text(cars.isEmpty
-                                      ? 'Add your first car'
-                                      : 'View your garage'),
+                                      ? AppLocalizations.of(context)!
+                                          .addYourFirstCar
+                                      : AppLocalizations.of(context)!
+                                          .viewYourGarage),
                                 ),
                               ]),
                         ),
@@ -172,14 +186,19 @@ class _MyHomePageState extends State<MyHomePage> {
                           LayoutBuilder(builder: (context, constraints) {
                             final tiles = [
                               _stat(
-                                  '$overdue', 'Overdue', context.palette.error),
-                              _stat('$soon', 'Due in 30 days',
+                                  '$overdue',
+                                  AppLocalizations.of(context)!.overdue,
+                                  context.palette.error),
+                              _stat(
+                                  '$soon',
+                                  AppLocalizations.of(context)!.dueInThirtyDays,
                                   context.palette.warning),
                               _stat(
                                   '${cars.length}',
                                   cars.length == 1
-                                      ? 'Car tracked'
-                                      : 'Cars tracked',
+                                      ? AppLocalizations.of(context)!.carTracked
+                                      : AppLocalizations.of(context)!
+                                          .carsTracked,
                                   context.palette.accent),
                             ];
                             if (constraints.maxWidth < 300 ||
@@ -197,22 +216,27 @@ class _MyHomePageState extends State<MyHomePage> {
                             ]);
                           }),
                           const SizedBox(height: 28),
-                          Text('Your deadlines',
+                          Text(AppLocalizations.of(context)!.yourDeadlines,
                               style: TextStyle(
                                   color: context.palette.ink,
                                   fontSize: 21,
                                   fontWeight: FontWeight.w700)),
                           const SizedBox(height: 6),
                           Text(
-                              'The most urgent dates come first. Tap to manage.',
+                              AppLocalizations.of(context)!
+                                  .theMostUrgentDatesComeFirstTapToManage,
                               style: TextStyle(
                                   color: context.palette.muted, fontSize: 12)),
                           const SizedBox(height: 14),
                           Wrap(spacing: 8, runSpacing: 8, children: [
-                            _chip('Needs attention · $attention',
+                            _chip(
+                                AppLocalizations.of(context)!
+                                    .attentionCount(attention),
                                 _DeadlineFilter.attention),
-                            _chip('Upcoming', _DeadlineFilter.upcoming),
-                            _chip('All', _DeadlineFilter.all),
+                            _chip(AppLocalizations.of(context)!.upcoming,
+                                _DeadlineFilter.upcoming),
+                            _chip(AppLocalizations.of(context)!.all,
+                                _DeadlineFilter.all),
                           ]),
                         ],
                       ],
@@ -222,11 +246,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 SliverToBoxAdapter(
                     child: _message(
                         Icons.cloud_off_outlined,
-                        'Unable to load your dashboard',
-                        'Check your connection and try again.',
+                        AppLocalizations.of(context)!.unableToLoadYourDashboard,
+                        AppLocalizations.of(context)!
+                            .checkYourConnectionAndTryAgain,
                         action: TextButton(
                             onPressed: () => setState(_connect),
-                            child: const Text('Try again'))))
+                            child:
+                                Text(AppLocalizations.of(context)!.tryAgain))))
               else if (!snapshot.hasData)
                 SliverToBoxAdapter(
                     child: Padding(
@@ -238,20 +264,25 @@ class _MyHomePageState extends State<MyHomePage> {
                 SliverToBoxAdapter(
                     child: _message(
                         Icons.event_note_outlined,
-                        'No deadlines yet',
+                        AppLocalizations.of(context)!.noDeadlinesYet,
                         cars.isEmpty
-                            ? 'Your saved expiry dates will appear here once you add a car.'
-                            : 'Open your garage and add expiry dates to your cars.'))
+                            ? AppLocalizations.of(context)!
+                                .yourSavedExpiryDatesWillAppearHereOnceYouAddACar
+                            : AppLocalizations.of(context)!
+                                .openYourGarageAndAddExpiryDatesToYourCars))
               else if (visible.isEmpty)
                 SliverToBoxAdapter(
                     child: _message(
                         Icons.check_circle_outline,
                         _filter == _DeadlineFilter.attention
-                            ? 'Nothing needs attention'
-                            : 'No upcoming deadlines',
+                            ? AppLocalizations.of(context)!
+                                .nothingNeedsAttention
+                            : AppLocalizations.of(context)!.noUpcomingDeadlines,
                         _filter == _DeadlineFilter.attention
-                            ? 'Take a look at Upcoming to plan your next renewal.'
-                            : 'Your saved dates are in the past. Update them after renewing.'))
+                            ? AppLocalizations.of(context)!
+                                .takeALookAtUpcomingToPlanYourNextRenewal
+                            : AppLocalizations.of(context)!
+                                .yourSavedDatesAreInThePastUpdateThemAfterRenewing))
               else
                 SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -307,12 +338,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 ? context.palette.warning
                 : context.palette.accent;
     final status = days == null
-        ? 'Check date'
+        ? AppLocalizations.of(context)!.checkDate
         : days < 0
-            ? '${days.abs()}d overdue'
+            ? AppLocalizations.of(context)!.daysOverdue(days.abs())
             : days == 0
-                ? 'Due today'
-                : 'Due in ${days}d';
+                ? AppLocalizations.of(context)!.dueToday
+                : AppLocalizations.of(context)!.dueInDays(days);
     return Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Material(
@@ -346,7 +377,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                            Text(deadline.label,
+                            Text(
+                                carItemLabel(
+                                    context, deadline.car, deadline.key),
                                 style: TextStyle(
                                     color: context.palette.ink,
                                     fontSize: 15,
@@ -376,7 +409,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700))),
                                   if (days != null)
-                                    Text(Car.extractDate(deadline.value),
+                                    Text(localizedDate(context, deadline.value),
                                         style: TextStyle(
                                             color: context.palette.muted,
                                             fontSize: 12)),

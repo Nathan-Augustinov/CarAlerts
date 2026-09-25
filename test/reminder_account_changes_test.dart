@@ -52,6 +52,35 @@ class MemoryReminders extends ReminderBackend {
 void main() {
   setUpAll(tzdata.initializeTimeZones);
 
+  test('invalid dates do not block valid schedules or catch-up reminders',
+      () async {
+    final backend = MemoryReminders();
+    backend.savedCars = {
+      'BAD': {'insurance_date': 'invalid'},
+      'GOOD': {
+        'inspection_date': '2030-08-01',
+        'custom_expiries': {
+          'bad': {'name': 'Broken', 'expiry_date': 'invalid'},
+          'good': {'name': 'Permit', 'expiry_date': '2030-07-02'},
+        },
+      },
+    };
+    final stale = Reminder(
+        'a', 'BAD', 'insurance_date', 1, tz.TZDateTime(tz.UTC, 2030, 7, 3, 9));
+    backend.requests[99] = stale.payload;
+    final coordinator = ReminderCoordinator(backend,
+        now: () => tz.TZDateTime(tz.UTC, 2030, 7, 1, 12));
+    expect(
+        await coordinator.refresh(
+            savedUser: 'a',
+            savedCar: 'GOOD',
+            savedDates: backend.savedCars['GOOD']),
+        ReminderStatus.ready);
+    expect(backend.cancelled, contains(99));
+    expect(backend.requests, hasLength(3));
+    expect(backend.shown.single.category, 'custom:good');
+  });
+
   test('rename replaces old schedules without replaying a delivered catch-up',
       () async {
     final backend = MemoryReminders();

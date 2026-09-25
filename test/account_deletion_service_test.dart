@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// MockUser exposes mutable state for simulating Firebase operations.
+// ignore: must_be_immutable
 class DeletingUser extends MockUser {
   DeletingUser() : super(uid: 'a', email: 'test@example.com');
   bool deleted = false;
@@ -32,8 +34,9 @@ void main() {
         reauthenticate: (currentUser, password) async {
           steps.add('verify');
           expect(currentUser.uid, 'a');
-          if (failReauthentication)
+          if (failReauthentication) {
             throw FirebaseAuthException(code: 'wrong-password');
+          }
         },
         withoutReminders: (uid, action) async {
           steps.add('reminders');
@@ -53,8 +56,7 @@ void main() {
     failReminders = false;
     await db.doc('cars/a/user_cars/CAR').set({'insurance_date': '2027-01-01'});
     await db.doc('users/a/settings/user_settings').set({'darkMode': false});
-    await db.doc('users/a').set({'name': 'Test'});
-    await db.doc('cars/a').set({'metadata': 'test'});
+
     await db
         .doc('cars/b/user_cars/OTHER')
         .set({'insurance_date': '2028-01-01'});
@@ -73,6 +75,66 @@ void main() {
     expect(steps, ['verify', 'reminders', 'identity']);
     expect(user.deleted, isTrue);
     expect((await db.doc('cars/b/user_cars/OTHER').get()).exists, isTrue);
+  });
+
+  test('subcollection-only permissions allow account deletion', () async {
+    db.securityRules = FakeFirebaseFirestore(securityRules: '''
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /cars/{uid}/user_cars/{car} { allow read, write: if true; }
+          match /users/{uid}/settings/{setting} { allow read, write: if true; }
+        }
+      }
+    ''').securityRules;
+    await service().delete(password: 'verified');
+    expect(user.deleted, isTrue);
+    expect((await db.collection('cars/a/user_cars').get()).docs, isEmpty);
+    expect((await db.collection('users/a/settings').get()).docs, isEmpty);
+  });
+
+  test('settings cleanup needs no collection listing permission', () async {
+    db.securityRules = FakeFirebaseFirestore(securityRules: '''
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /cars/{uid}/user_cars/{car} { allow read, write: if true; }
+          match /users/{uid}/settings/user_settings {
+            allow write: if true;
+          }
+        }
+      }
+    ''').securityRules;
+    // No settings read permission: cleanup must use a direct delete.
+    await expectLater(db.collection('users/a/settings').get(), throwsException);
+    await service().delete(password: 'verified');
+    expect(user.deleted, isTrue);
+    // Permit inspection after exercising deletion without read access.
+    db.securityRules = FakeFirebaseFirestore(securityRules: '''
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /{document=**} { allow read: if true; }
+        }
+      }
+    ''').securityRules;
+    expect(
+        (await db.doc('users/a/settings/user_settings').get()).exists, isFalse);
+    expect((await db.collection('cars/a/user_cars').get()).docs, isEmpty);
+  });
+
+  test('denied settings deletion leaves cars and identity intact', () async {
+    db.securityRules = FakeFirebaseFirestore(securityRules: '''
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /cars/{uid}/user_cars/{car} { allow read, write: if true; }
+          match /users/{uid}/settings/user_settings { allow read: if true; }
+        }
+      }
+    ''').securityRules;
+    await expectLater(service().delete(password: 'verified'),
+        throwsA(isA<AccountDeletionException>()));
+    expect(user.deleted, isFalse);
+    expect((await db.doc('cars/a/user_cars/CAR').get()).exists, isTrue);
+    expect(
+        (await db.doc('users/a/settings/user_settings').get()).exists, isTrue);
   });
 
   test('failed verification leaves all data and reminders untouched', () async {
@@ -144,6 +206,23 @@ void main() {
     await expectLater(deletion.delete(), throwsA(isA<FirebaseAuthException>()));
     expect(user.deleted, isFalse);
     expect((await db.doc('cars/a/user_cars/CAR').get()).exists, isTrue);
+  });
+
+  test('Google account mismatch stops before any cleanup', () async {
+    final deletion = AccountDeletionService(
+      auth: auth,
+      firestore: db,
+      reauthenticate: (_, __) async =>
+          throw FirebaseAuthException(code: 'user-mismatch'),
+      withoutReminders: (_, __) async => fail('Cleanup must not start'),
+      clearGoogleSession: () async {},
+    );
+    await expectLater(deletion.delete(), throwsA(isA<FirebaseAuthException>()));
+    expect(auth.currentUser?.uid, 'a');
+    expect(user.deleted, isFalse);
+    expect((await db.doc('cars/a/user_cars/CAR').get()).exists, isTrue);
+    expect(
+        (await db.doc('users/a/settings/user_settings').get()).exists, isTrue);
   });
 
   test('double submission cannot start a second deletion', () async {

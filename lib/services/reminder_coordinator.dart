@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/localized_content.dart';
 import 'dart:convert';
 import '../models/car.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -15,10 +18,11 @@ enum ReminderStatus { ready, disabled, failed }
 class Reminder {
   final String user, car, category;
   final String? label;
+  final String language;
   final int advance;
   final tz.TZDateTime date;
   Reminder(this.user, this.car, this.category, this.advance, this.date,
-      {this.label});
+      {this.label, this.language = 'en'});
   String get key => jsonEncode([user, car, category, advance]);
   String get occurrenceKey => jsonEncode([
         user,
@@ -29,9 +33,13 @@ class Reminder {
             .split('T')
             .first
       ]);
-  String get title => '$car · ${label ?? expiryLabels[category]}';
-  String get body =>
-      advance == 1 ? 'Expires tomorrow.' : 'Expires in $advance days.';
+  AppLocalizations get localizations =>
+      lookupAppLocalizations(Locale(language));
+  String get title =>
+      '$car · ${label ?? (language == 'en' ? expiryLabels[category] : documentLabel(localizations, category))}';
+  String get body => advance == 1
+      ? localizations.expiresTomorrow
+      : localizations.expiresInDays(advance);
   String get payload => jsonEncode({
         'v': 1,
         'user': user,
@@ -39,13 +47,14 @@ class Reminder {
         'key': key,
         'time': date.millisecondsSinceEpoch,
         'zone': date.location.name,
-        'title': title
+        'title': title,
+        'language': language
       });
 }
 
 List<Reminder> planReminders(String user,
     Map<String, Map<String, dynamic>> cars, tz.Location zone, DateTime now,
-    {int? limit}) {
+    {int? limit, String language = 'en'}) {
   final result = <Reminder>[];
   for (final car in cars.entries) {
     final model = Car.fromMap(car.value, car.key);
@@ -53,12 +62,14 @@ List<Reminder> planReminders(String user,
       final value = model.allItems[category];
       if (value == null) continue;
       // Stored expiry values represent calendar dates, never UTC instants.
-      final date = DateTime.parse(value.split('T').first);
+      final date = DateTime.tryParse(value.split('T').first);
+      if (date == null) continue;
       for (final advance in [30, 7, 1]) {
         final delivery =
             tz.TZDateTime(zone, date.year, date.month, date.day - advance, 9);
         if (delivery.isAfter(now)) {
           result.add(Reminder(user, car.key, category, advance, delivery,
+              language: language,
               label: category.startsWith('custom:')
                   ? model.itemLabel(category)
                   : null));
@@ -75,7 +86,8 @@ List<Reminder> planReminders(String user,
 
 /// Only late saves create catch-up work; ordinary refreshes never invent it.
 List<Reminder> lateReminders(String user, String car,
-    Map<String, dynamic> dates, tz.Location zone, DateTime now) {
+    Map<String, dynamic> dates, tz.Location zone, DateTime now,
+    {String language = 'en'}) {
   final localNow = tz.TZDateTime.from(now, zone);
   final tomorrow = DateTime(localNow.year, localNow.month, localNow.day + 1);
   final result = <Reminder>[];
@@ -83,11 +95,13 @@ List<Reminder> lateReminders(String user, String car,
   for (final category in model.allItems.keys) {
     final value = model.allItems[category];
     if (value == null) continue;
-    final expiry = DateTime.parse(value.split('T').first);
+    final expiry = DateTime.tryParse(value.split('T').first);
+    if (expiry == null) continue;
     final delivery =
         tz.TZDateTime(zone, expiry.year, expiry.month, expiry.day - 1, 9);
     if (expiry == tomorrow && !delivery.isAfter(now)) {
       result.add(Reminder(user, car, category, 1, delivery,
+          language: language,
           label: category.startsWith('custom:')
               ? model.itemLabel(category)
               : null));
@@ -97,6 +111,7 @@ List<Reminder> lateReminders(String user, String car,
 }
 
 abstract class ReminderBackend {
+  String get language => 'en';
   String? get user;
   int? get limit;
   Future<void> initialize();
@@ -187,8 +202,9 @@ class ReminderCoordinator {
       }
       final zone = await backend.timezone();
       if (savedUser == user && savedCar != null && savedDates != null) {
-        for (final reminder
-            in lateReminders(user, savedCar, savedDates, zone, now())) {
+        for (final reminder in lateReminders(
+            user, savedCar, savedDates, zone, now(),
+            language: backend.language)) {
           history.putIfAbsent(reminder.occurrenceKey, () => 'queued');
         }
       }
@@ -203,11 +219,12 @@ class ReminderCoordinator {
       }
       final cars = await backend.cars(user);
       if (backend.user != user) return ReminderStatus.ready;
-      final desired =
-          planReminders(user, cars, zone, now(), limit: backend.limit);
+      final desired = planReminders(user, cars, zone, now(),
+          limit: backend.limit, language: backend.language);
       final late = <Reminder>[];
       for (final car in cars.entries) {
-        late.addAll(lateReminders(user, car.key, car.value, zone, now())
+        late.addAll(lateReminders(user, car.key, car.value, zone, now(),
+                language: backend.language)
             .where((r) => history[r.occurrenceKey] == 'queued'));
       }
       final eligible = late.map((r) => r.occurrenceKey).toSet();

@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,13 +33,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       _error = null;
     });
     try {
-      await _service.compose(_type, _message.text);
+      await _service.compose(_type, _message.text,
+          localizations: AppLocalizations.of(context)!);
     } catch (error) {
       if (!mounted) return;
       setState(() => _error = error is PlatformException &&
               error.code == 'email_unavailable'
-          ? 'No email app is available. Install or set up an email app, then try again. Your message is still here.'
-          : 'Could not prepare your email. Please try again. Your message is still here.');
+          ? AppLocalizations.of(context)!
+              .noEmailAppIsAvailableInstallOrSetUpAnEmailAppThenTryAgainYourMessageIsStillHere
+          : AppLocalizations.of(context)!
+              .couldNotPrepareYourEmailPleaseTryAgainYourMessageIsStillHere);
     } finally {
       if (mounted) setState(() => _opening = false);
     }
@@ -53,7 +57,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         backgroundColor: context.palette.background,
         foregroundColor: context.palette.ink,
         elevation: 0,
-        title: const Text('Help & feedback'),
+        title: Text(AppLocalizations.of(context)!.helpFeedback),
       ),
       body: SafeArea(
         child: Center(
@@ -75,7 +79,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                           Icon(Icons.forum_outlined,
                               color: context.palette.bannerAccent, size: 32),
                           const SizedBox(height: 18),
-                          Text('Make CarAlerts better',
+                          Text(
+                              AppLocalizations.of(context)!.makeCaralertsBetter,
                               style: TextStyle(
                                   color: context.palette.onBanner,
                                   fontSize: 26,
@@ -83,7 +88,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                                   letterSpacing: -0.5)),
                           const SizedBox(height: 10),
                           Text(
-                              'Have an idea or spotted a problem? We’d love to hear from you.',
+                              AppLocalizations.of(context)!
+                                  .haveAnIdeaOrSpottedAProblemWeDLoveToHearFromYou,
                               style: TextStyle(
                                   color: context.palette.bannerMuted,
                                   fontSize: 14,
@@ -91,7 +97,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         ]),
                   ),
                   const SizedBox(height: 26),
-                  Text('What would you like to share?',
+                  Text(AppLocalizations.of(context)!.whatWouldYouLikeToShare,
                       style: TextStyle(
                           color: context.palette.ink,
                           fontSize: 17,
@@ -123,7 +129,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                                       value: type,
                                       activeColor: context.palette.accent,
                                       enabled: !_opening,
-                                      title: Text(type.label,
+                                      title: Text(
+                                          type.localizedLabel(
+                                              AppLocalizations.of(context)!),
                                           style: TextStyle(
                                               color: context.palette.ink,
                                               fontSize: 14,
@@ -139,7 +147,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                             .toList()),
                   ),
                   const SizedBox(height: 12),
-                  Text('Email subject: ${_type.subject}',
+                  Text(
+                      AppLocalizations.of(context)!.emailSubject(_type
+                          .localizedSubject(AppLocalizations.of(context)!)),
                       style: TextStyle(
                           color: context.palette.muted,
                           fontSize: 12,
@@ -147,8 +157,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   const SizedBox(height: 20),
                   Text(
                       problem
-                          ? 'Tell us what happened'
-                          : 'Tell us about your idea',
+                          ? AppLocalizations.of(context)!.tellUsWhatHappened
+                          : AppLocalizations.of(context)!.tellUsAboutYourIdea,
                       style: TextStyle(
                           color: context.palette.ink,
                           fontSize: 17,
@@ -165,8 +175,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         color: context.palette.ink, fontSize: 15, height: 1.5),
                     decoration: InputDecoration(
                       hintText: problem
-                          ? 'What went wrong? What were you doing, and what did you expect to happen?'
-                          : 'What could we improve, and how would it help you?',
+                          ? AppLocalizations.of(context)!
+                              .whatWentWrongWhatWereYouDoingAndWhatDidYouExpectToHappen
+                          : AppLocalizations.of(context)!
+                              .whatCouldWeImproveAndHowWouldItHelpYou,
                       hintStyle:
                           TextStyle(color: context.palette.muted, fontSize: 14),
                       filled: true,
@@ -186,7 +198,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                               color: context.palette.accent, width: 2)),
                     ),
                     validator: (value) => value == null || value.trim().isEmpty
-                        ? 'Please write a message before continuing.'
+                        ? AppLocalizations.of(context)!
+                            .pleaseWriteAMessageBeforeContinuing
                         : null,
                   ),
                   const SizedBox(height: 18),
@@ -196,7 +209,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                         child: Text(
-                            'To help us understand your feedback, your phone model, OS version, and app version are automatically added at the end of the email.',
+                            AppLocalizations.of(context)!
+                                .toHelpUsUnderstandYourFeedbackYourPhoneModelOsVersionAndAppVersionAreAutomaticallyAddedAtTheEndOfTheEmail,
                             style: TextStyle(
                                 color: context.palette.muted,
                                 fontSize: 12,
@@ -226,11 +240,14 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.email_outlined, size: 20),
-                    label: Text(
-                        _opening ? 'Preparing email…' : 'Continue to email'),
+                    label: Text(_opening
+                        ? AppLocalizations.of(context)!.preparingEmail
+                        : AppLocalizations.of(context)!.continueToEmail),
                   ),
                   const SizedBox(height: 12),
-                  Text('Review and send from your email app.',
+                  Text(
+                      AppLocalizations.of(context)!
+                          .reviewAndSendFromYourEmailApp,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: context.palette.muted,

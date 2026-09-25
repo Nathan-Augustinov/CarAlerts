@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -39,19 +40,19 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete your account?'),
-        content: const Text(
-            'Your account, all saved cars, and their expiry dates will be '
-            'permanently deleted. This cannot be undone.'),
+        title: Text(AppLocalizations.of(context)!.deleteYourAccount),
+        content: Text(AppLocalizations.of(context)!.deleteConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep account'),
+            child: Text(AppLocalizations.of(context)!.keepAccount),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: context.palette.error),
-            child: const Text('Delete permanently'),
+            child: Text(widget.requiresPassword
+                ? AppLocalizations.of(context)!.deletePermanently
+                : AppLocalizations.of(context)!.verifyWithGoogleDelete),
           ),
         ],
       ),
@@ -73,8 +74,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     } on GoogleSignInException catch (error) {
       if (mounted) {
         setState(() => _error = error.code == GoogleSignInExceptionCode.canceled
-            ? 'Verification cancelled. Your account has not been deleted.'
-            : 'Could not verify your Google account. Please try again.');
+            ? AppLocalizations.of(context)!
+                .verificationCancelledYourAccountHasNotBeenDeleted
+            : AppLocalizations.of(context)!
+                .couldNotVerifyYourGoogleAccountPleaseTryAgain);
       }
     } on FirebaseAuthException catch (error) {
       if (mounted) setState(() => _error = _authError(error.code));
@@ -82,27 +85,39 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       if (mounted) setState(() => _error = error.message);
     } catch (_) {
       if (mounted) {
-        setState(() => _error =
-            'Could not delete your account. Check your connection and try again.');
+        setState(() => _error = AppLocalizations.of(context)!
+            .couldNotDeleteYourAccountCheckYourConnectionAndTryAgain);
       }
     } finally {
       if (mounted) setState(() => _deleting = false);
     }
   }
 
+  String get _googleVerification =>
+      AppLocalizations.of(context)!.googleDeletion(
+          widget.email ?? AppLocalizations.of(context)!.googleAccountAbove);
+
   String _authError(String code) => switch (code) {
         'invalid-credential' ||
         'wrong-password' ||
         'missing-password' =>
-          'Your password was not accepted. Please check it and try again.',
-        'user-mismatch' => 'Please verify with the account you are deleting.',
-        'requires-recent-login' =>
-          'Please sign in again, then return here to delete your account.',
-        'network-request-failed' => 'Check your connection and try again.',
-        'too-many-requests' => 'Too many attempts. Please wait and try again.',
-        'unsupported-provider' =>
-          'This sign-in method cannot be verified here. Please contact support.',
-        _ => 'Could not verify your account. Please sign in again and retry.',
+          widget.requiresPassword
+              ? AppLocalizations.of(context)!
+                  .yourPasswordWasNotAcceptedPleaseCheckItAndTryAgain
+              : AppLocalizations.of(context)!
+                  .couldNotVerifyYourGoogleAccountPleaseTryAgain,
+        'user-mismatch' => AppLocalizations.of(context)!.differentAccount(
+            widget.email ?? AppLocalizations.of(context)!.accountBeingDeleted),
+        'requires-recent-login' => AppLocalizations.of(context)!
+            .pleaseSignInAgainThenReturnHereToDeleteYourAccount,
+        'network-request-failed' =>
+          AppLocalizations.of(context)!.checkYourConnectionAndTryAgain,
+        'too-many-requests' =>
+          AppLocalizations.of(context)!.tooManyAttemptsPleaseWaitAndTryAgain,
+        'unsupported-provider' => AppLocalizations.of(context)!
+            .thisSignInMethodCannotBeVerifiedHerePleaseContactSupport,
+        _ => AppLocalizations.of(context)!
+            .couldNotVerifyYourAccountPleaseSignInAgainAndRetry,
       };
 
   @override
@@ -110,7 +125,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         canPop: !_deleting,
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Delete account'),
+            title: Text(AppLocalizations.of(context)!.deleteAccount),
             automaticallyImplyLeading: !_deleting,
           ),
           body: SafeArea(
@@ -125,18 +140,18 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                       Icon(Icons.person_remove_outlined,
                           color: context.palette.error, size: 40),
                       const SizedBox(height: 24),
-                      Text('Permanently delete your account',
+                      Text(
+                          AppLocalizations.of(context)!
+                              .permanentlyDeleteYourAccount,
                           style: Theme.of(context).textTheme.headlineSmall),
                       const SizedBox(height: 12),
                       Text(
-                        'This removes your Car Alerts account, saved cars, '
-                        'expiry dates, and saved account settings. '
-                        'Reminders on this device will be cancelled.',
+                        AppLocalizations.of(context)!.deletionDetails,
                         style: TextStyle(
                             color: context.palette.muted, height: 1.5),
                       ),
                       const SizedBox(height: 12),
-                      Text('This cannot be undone.',
+                      Text(AppLocalizations.of(context)!.thisCannotBeUndone,
                           style: TextStyle(
                               color: context.palette.error,
                               fontWeight: FontWeight.w700)),
@@ -157,9 +172,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                           enableSuggestions: false,
                           autofillHints: const [AutofillHints.password],
                           decoration: InputDecoration(
-                            labelText: 'Current password',
-                            helperText:
-                                'Verify your identity to delete this account.',
+                            labelText:
+                                AppLocalizations.of(context)!.currentPassword,
+                            helperText: AppLocalizations.of(context)!
+                                .verifyYourIdentityToDeleteThisAccount,
                             helperMaxLines: 2,
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(14)),
@@ -169,20 +185,20 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                                   : () => setState(
                                       () => _hidePassword = !_hidePassword),
                               tooltip: _hidePassword
-                                  ? 'Show password'
-                                  : 'Hide password',
+                                  ? AppLocalizations.of(context)!.showPassword
+                                  : AppLocalizations.of(context)!.hidePassword,
                               icon: Icon(_hidePassword
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined),
                             ),
                           ),
                           validator: (value) => value == null || value.isEmpty
-                              ? 'Enter your current password.'
+                              ? AppLocalizations.of(context)!
+                                  .enterYourCurrentPassword
                               : null,
                         )
                       else
-                        Text(
-                            'You’ll verify your Google account before deletion.',
+                        Text(_googleVerification,
                             style: TextStyle(
                                 color: context.palette.muted, height: 1.5)),
                       if (_error != null) ...[
@@ -205,14 +221,17 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                               vertical: 16, horizontal: 20),
                         ),
                         icon: const Icon(Icons.delete_forever_outlined),
-                        label: Text(
-                            _deleting ? 'Deleting account…' : 'Delete account'),
+                        label: Text(_deleting
+                            ? AppLocalizations.of(context)!.deletingAccount
+                            : AppLocalizations.of(context)!.deleteAccount),
                       ),
                       if (_deleting) ...[
                         const SizedBox(height: 16),
                         const LinearProgressIndicator(),
                         const SizedBox(height: 12),
-                        const Text('Keep the app open while deletion finishes.',
+                        Text(
+                            AppLocalizations.of(context)!
+                                .keepTheAppOpenWhileDeletionFinishes,
                             textAlign: TextAlign.center),
                       ],
                     ],
