@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:car_alerts/services/user_settings_service.dart';
@@ -36,22 +37,29 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   String _authError(FirebaseAuthException error) => switch (error.code) {
-        'invalid-email' => 'Enter a valid email address.',
+        'invalid-email' =>
+          AppLocalizations.of(context)!.enterAValidEmailAddress,
         'invalid-credential' ||
         'wrong-password' ||
         'user-not-found' =>
-          'Email or password is incorrect. Try again or reset your password.',
-        'email-already-in-use' =>
-          'This email already has an account. Sign in or reset your password.',
+          AppLocalizations.of(context)!
+              .emailOrPasswordIsIncorrectTryAgainOrResetYourPassword,
+        'email-already-in-use' => AppLocalizations.of(context)!
+            .thisEmailAlreadyHasAnAccountSignInOrResetYourPassword,
         'weak-password' ||
         'password-does-not-meet-requirements' =>
-          'Choose a stronger password that meets the account password requirements.',
-        'user-disabled' => 'This account has been disabled.',
-        'too-many-requests' => 'Too many attempts. Please wait and try again.',
-        'network-request-failed' => 'Check your connection and try again.',
+          AppLocalizations.of(context)!
+              .chooseAStrongerPasswordThatMeetsTheAccountPasswordRequirements,
+        'user-disabled' =>
+          AppLocalizations.of(context)!.thisAccountHasBeenDisabled,
+        'too-many-requests' =>
+          AppLocalizations.of(context)!.tooManyAttemptsPleaseWaitAndTryAgain,
+        'network-request-failed' =>
+          AppLocalizations.of(context)!.checkYourConnectionAndTryAgain,
         'operation-not-allowed' =>
-          'This sign-in method is not available right now.',
-        _ => 'Unable to complete your request. Please try again.',
+          AppLocalizations.of(context)!.thisSignInMethodIsNotAvailableRightNow,
+        _ => AppLocalizations.of(context)!
+            .unableToCompleteYourRequestPleaseTryAgain,
       };
 
   Future<void> _authenticate(String operation) async {
@@ -69,8 +77,8 @@ class _SignInScreenState extends State<SignInScreen> {
       if (operation == 'reset') {
         await _authService.resetPassword(_email.text);
         if (mounted) {
-          setState(() => _notice =
-              'If an account exists for this email, you’ll receive a password reset link.');
+          setState(() => _notice = AppLocalizations.of(context)!
+              .ifAnAccountExistsForThisEmailYouLlReceiveAPasswordResetLink);
         }
       } else {
         final user = operation == 'google'
@@ -93,8 +101,8 @@ class _SignInScreenState extends State<SignInScreen> {
       if (mounted) setState(() => _error = _authError(error));
     } catch (_) {
       if (mounted) {
-        setState(() =>
-            _error = 'Unable to complete your request. Please try again.');
+        setState(() => _error = AppLocalizations.of(context)!
+            .unableToCompleteYourRequestPleaseTryAgain);
       }
     } finally {
       if (mounted) {
@@ -137,11 +145,12 @@ class _SignInScreenState extends State<SignInScreen> {
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.email],
             autocorrect: false,
-            decoration: _decoration('Email address', Icons.mail_outline),
+            decoration: _decoration(
+                AppLocalizations.of(context)!.emailAddress, Icons.mail_outline),
             validator: (value) => RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
                     .hasMatch(value?.trim() ?? '')
                 ? null
-                : 'Enter a valid email address.',
+                : AppLocalizations.of(context)!.enterAValidEmailAddress,
           ),
           const SizedBox(height: 10),
           TextFormField(
@@ -160,12 +169,18 @@ class _SignInScreenState extends State<SignInScreen> {
             onFieldSubmitted: (_) {
               if (!_creatingAccount) _authenticate('email');
             },
-            decoration: _decoration('Password', Icons.lock_outline).copyWith(
-              hintText: _creatingAccount ? 'At least 6 characters' : null,
+            decoration: _decoration(
+                    AppLocalizations.of(context)!.password, Icons.lock_outline)
+                .copyWith(
+              hintText: _creatingAccount
+                  ? AppLocalizations.of(context)!.atLeastCharacters
+                  : null,
               suffixIcon: IconButton(
                   onPressed: () =>
                       setState(() => _hidePassword = !_hidePassword),
-                  tooltip: _hidePassword ? 'Show password' : 'Hide password',
+                  tooltip: _hidePassword
+                      ? AppLocalizations.of(context)!.showPassword
+                      : AppLocalizations.of(context)!.hidePassword,
                   icon: Icon(
                       _hidePassword
                           ? Icons.visibility_outlined
@@ -173,9 +188,11 @@ class _SignInScreenState extends State<SignInScreen> {
                       color: context.palette.muted)),
             ),
             validator: (value) {
-              if (value == null || value.isEmpty) return 'Enter your password.';
+              if (value == null || value.isEmpty) {
+                return AppLocalizations.of(context)!.enterYourPassword;
+              }
               if (_creatingAccount && value.length < 6) {
-                return 'Use at least 6 characters.';
+                return AppLocalizations.of(context)!.useAtLeastCharacters;
               }
               return null;
             },
@@ -190,11 +207,13 @@ class _SignInScreenState extends State<SignInScreen> {
               enableSuggestions: false,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _authenticate('email'),
-              decoration: _decoration('Confirm password', Icons.lock_outline),
+              decoration: _decoration(
+                  AppLocalizations.of(context)!.confirmPassword,
+                  Icons.lock_outline),
               validator: (value) => value == null || value.isEmpty
-                  ? 'Confirm your password.'
+                  ? AppLocalizations.of(context)!.confirmYourPassword
                   : value != _password.text
-                      ? 'Passwords do not match.'
+                      ? AppLocalizations.of(context)!.passwordsDoNotMatch
                       : null,
             ),
           ] else
@@ -205,8 +224,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   style: TextButton.styleFrom(
                       foregroundColor: context.palette.accent),
                   child: Text(_operation == 'reset'
-                      ? 'Sending reset link…'
-                      : 'Forgot password?'),
+                      ? AppLocalizations.of(context)!.sendingResetLink
+                      : AppLocalizations.of(context)!.forgotPassword),
                 )),
           const SizedBox(height: 10),
           FilledButton(
@@ -219,10 +238,10 @@ class _SignInScreenState extends State<SignInScreen> {
                     borderRadius: BorderRadius.circular(14))),
             child: Text(
                 _operation == 'email'
-                    ? 'Please wait…'
+                    ? AppLocalizations.of(context)!.pleaseWait
                     : _creatingAccount
-                        ? 'Create account'
-                        : 'Sign in',
+                        ? AppLocalizations.of(context)!.createAccount
+                        : AppLocalizations.of(context)!.signIn,
                 style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
           TextButton(
@@ -240,8 +259,8 @@ class _SignInScreenState extends State<SignInScreen> {
             style:
                 TextButton.styleFrom(foregroundColor: context.palette.accent),
             child: Text(_creatingAccount
-                ? 'Already have an account? Sign in'
-                : 'New here? Create an account'),
+                ? AppLocalizations.of(context)!.alreadyHaveAnAccountSignIn
+                : AppLocalizations.of(context)!.newHereCreateAnAccount),
           ),
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
@@ -249,7 +268,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 Expanded(child: Divider(color: context.palette.border)),
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: Text('or',
+                    child: Text(AppLocalizations.of(context)!.or,
                         style: TextStyle(color: context.palette.muted))),
                 Expanded(child: Divider(color: context.palette.border)),
               ])),
@@ -270,7 +289,7 @@ class _SignInScreenState extends State<SignInScreen> {
               color: context.palette.bannerAccent, size: 22),
           const SizedBox(width: 8),
           Expanded(
-              child: Text('A LITTLE PEACE OF MIND',
+              child: Text(AppLocalizations.of(context)!.aLittlePeaceOfMind,
                   style: TextStyle(
                       color: context.palette.bannerAccent,
                       fontSize: 10,
@@ -278,7 +297,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       letterSpacing: 1.2))),
         ]),
         const SizedBox(height: 16),
-        Text('Less to remember.\nMore road ahead.',
+        Text(AppLocalizations.of(context)!.lessToRememberMoreRoadAhead,
             style: TextStyle(
                 color: context.palette.onBanner,
                 fontSize: 27,
@@ -287,7 +306,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 letterSpacing: -0.5)),
         ...[
           const SizedBox(height: 14),
-          Text('Insurance · Inspections · Vignettes',
+          Text(AppLocalizations.of(context)!.insuranceInspectionsVignettes,
               style: TextStyle(
                   color: context.palette.bannerMuted,
                   fontSize: 12,
@@ -324,8 +343,9 @@ class _SignInScreenState extends State<SignInScreen> {
                       children: [
                         Text(
                             _creatingAccount
-                                ? 'Create your account'
-                                : 'Welcome',
+                                ? AppLocalizations.of(context)!
+                                    .createYourAccount
+                                : AppLocalizations.of(context)!.welcome,
                             style: TextStyle(
                                 color: context.palette.ink,
                                 fontSize: 24,
@@ -363,8 +383,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                       height: 22),
                               label: Text(
                                   _operation == 'google'
-                                      ? 'Signing in…'
-                                      : 'Sign in with Google',
+                                      ? AppLocalizations.of(context)!.signingIn
+                                      : AppLocalizations.of(context)!
+                                          .signInWithGoogle,
                                   style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w600)),

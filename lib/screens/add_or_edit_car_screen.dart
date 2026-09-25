@@ -1,3 +1,5 @@
+import '../l10n/localized_content.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../models/expiry_validation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -37,8 +39,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   DateTime? hungarianVignetteExpiringDate;
   DateTime? austrianVignetteExpiringDate;
 
-  final String errorText = "Error";
-  final String successText = "Success";
+  String get errorText => AppLocalizations.of(context)!.error;
+  String get successText => AppLocalizations.of(context)!.success;
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
@@ -71,7 +73,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
         backgroundColor: context.palette.background,
         foregroundColor: context.palette.ink,
         surfaceTintColor: Colors.transparent,
-        title: Text('YOUR GARAGE',
+        title: Text(AppLocalizations.of(context)!.yourGarage,
             style: TextStyle(
                 color: context.palette.accent,
                 fontSize: 11,
@@ -92,7 +94,10 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(widget.car == null ? 'Add a car' : 'Edit car',
+                    Text(
+                        widget.car == null
+                            ? AppLocalizations.of(context)!.addACar
+                            : AppLocalizations.of(context)!.editCar,
                         style: TextStyle(
                             color: context.palette.ink,
                             fontSize: 34,
@@ -101,8 +106,10 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                     const SizedBox(height: 6),
                     Text(
                         widget.car == null
-                            ? 'A few details now. Fewer surprises later.'
-                            : 'Keep your car’s details and deadlines up to date.',
+                            ? AppLocalizations.of(context)!
+                                .aFewDetailsNowFewerSurprisesLater
+                            : AppLocalizations.of(context)!
+                                .keepYourCarSDetailsAndDeadlinesUpToDate,
                         style: TextStyle(
                             color: context.palette.muted, fontSize: 14)),
                     const SizedBox(height: 24),
@@ -119,14 +126,15 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                              Text('Your car, covered',
+                              Text(AppLocalizations.of(context)!.yourCarCovered,
                                   style: TextStyle(
                                       color: context.palette.onBanner,
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700)),
                               const SizedBox(height: 5),
                               Text(
-                                  '$selected ${selected == 1 ? 'item' : 'items'} tracked',
+                                  AppLocalizations.of(context)!
+                                      .itemsTracked(selected),
                                   style: TextStyle(
                                       color: context.palette.bannerMuted,
                                       fontSize: 12,
@@ -135,7 +143,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                       ]),
                     ),
                     const SizedBox(height: 28),
-                    Text('Car details',
+                    Text(AppLocalizations.of(context)!.carDetails,
                         style: TextStyle(
                             color: context.palette.ink,
                             fontSize: 21,
@@ -153,9 +161,11 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1),
                         decoration: InputDecoration(
-                          labelText: 'Registration number',
-                          hintText: 'e.g. AR00XYZ',
-                          helperText: 'Use the number on your licence plate.',
+                          labelText:
+                              AppLocalizations.of(context)!.registrationNumber,
+                          hintText: AppLocalizations.of(context)!.eGArXyz,
+                          helperText: AppLocalizations.of(context)!
+                              .useTheNumberOnYourLicencePlate,
                           helperMaxLines: 2,
                           prefixIcon: const Icon(Icons.directions_car_outlined),
                           filled: true,
@@ -163,38 +173,42 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
-                        validator: (value) => value == null ||
-                                value.trim().isEmpty
-                            ? 'Enter your registration number.'
-                            : value.contains('/')
-                                ? 'Use a registration number without slashes.'
-                                : null,
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                                ? AppLocalizations.of(context)!
+                                    .enterYourRegistrationNumber
+                                : value.contains('/')
+                                    ? AppLocalizations.of(context)!
+                                        .useARegistrationNumberWithoutSlashes
+                                    : null,
                       ),
                     ),
                     const SizedBox(height: 28),
-                    Text('Documents & expiry dates',
+                    Text(AppLocalizations.of(context)!.documentsExpiryDates,
                         style: TextStyle(
                             color: context.palette.ink,
                             fontSize: 21,
                             fontWeight: FontWeight.w700)),
                     const SizedBox(height: 6),
-                    Text('Choose what to track, then add each expiry date.',
+                    Text(
+                        AppLocalizations.of(context)!
+                            .chooseWhatToTrackThenAddEachExpiryDate,
                         style: TextStyle(
                             color: context.palette.muted,
                             fontSize: 13,
                             height: 1.5)),
                     const SizedBox(height: 16),
                     _document(
-                        'Car insurance',
-                        'Insurance cover',
+                        AppLocalizations.of(context)!.carInsurance,
+                        AppLocalizations.of(context)!.insuranceCover,
                         Icons.shield_outlined,
                         isInsuranceSelected,
                         insuranceExpiringDate,
                         (value) => setState(() => isInsuranceSelected = value),
                         (date) => setState(() => insuranceExpiringDate = date)),
                     _document(
-                        'Car inspection',
-                        'Roadworthiness check',
+                        AppLocalizations.of(context)!.carInspection,
+                        AppLocalizations.of(context)!.roadworthinessCheck,
                         Icons.build_outlined,
                         isInspectionSelected,
                         inspectionExpiringDate,
@@ -203,15 +217,15 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                             setState(() => inspectionExpiringDate = date)),
                     Padding(
                         padding: const EdgeInsets.only(top: 12, bottom: 12),
-                        child: Text('ROAD VIGNETTES',
+                        child: Text(AppLocalizations.of(context)!.roadVignettes,
                             style: TextStyle(
                                 color: context.palette.muted,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 1.5))),
                     _document(
-                        'Romanian vignette',
-                        'Romania',
+                        AppLocalizations.of(context)!.romanianVignette,
+                        AppLocalizations.of(context)!.romania,
                         Icons.confirmation_number_outlined,
                         isRomanianVignetteSelected,
                         romanianVignetteExpiringDate,
@@ -220,8 +234,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                         (date) => setState(
                             () => romanianVignetteExpiringDate = date)),
                     _document(
-                        'Hungarian vignette',
-                        'Hungary',
+                        AppLocalizations.of(context)!.hungarianVignette,
+                        AppLocalizations.of(context)!.hungary,
                         Icons.confirmation_number_outlined,
                         isHungarianVignetteSelected,
                         hungarianVignetteExpiringDate,
@@ -230,8 +244,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                         (date) => setState(
                             () => hungarianVignetteExpiringDate = date)),
                     _document(
-                        'Austrian vignette',
-                        'Austria',
+                        AppLocalizations.of(context)!.austrianVignette,
+                        AppLocalizations.of(context)!.austria,
                         Icons.confirmation_number_outlined,
                         isAustrianVignetteSelected,
                         austrianVignetteExpiringDate,
@@ -240,14 +254,15 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                         (date) => setState(
                             () => austrianVignetteExpiringDate = date)),
                     const SizedBox(height: 28),
-                    Text('Other expiry dates',
+                    Text(AppLocalizations.of(context)!.otherExpiryDates,
                         style: TextStyle(
                             color: context.palette.ink,
                             fontSize: 21,
                             fontWeight: FontWeight.w700)),
                     const SizedBox(height: 6),
                     Text(
-                        'Track parking permits, warranties and more. Up to 10 per car.',
+                        AppLocalizations.of(context)!
+                            .trackParkingPermitsWarrantiesAndMoreUpToPerCar,
                         style: TextStyle(
                             color: context.palette.muted, fontSize: 13)),
                     const SizedBox(height: 16),
@@ -267,10 +282,13 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                                 };
                               }),
                       icon: const Icon(Icons.add),
-                      label: Text('Add expiry (${_customExpiries.length}/10)'),
+                      label: Text(AppLocalizations.of(context)!
+                          .addExpiryCount(_customExpiries.length)),
                     ),
                     const SizedBox(height: 12),
-                    Text('You can add or update expiry dates at any time.',
+                    Text(
+                        AppLocalizations.of(context)!
+                            .youCanAddOrUpdateExpiryDatesAtAnyTime,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: context.palette.muted, fontSize: 12)),
@@ -287,10 +305,10 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                       icon: const Icon(Icons.check, size: 20),
                       label: Text(
                           _saving
-                              ? 'Saving…'
+                              ? AppLocalizations.of(context)!.saving
                               : widget.car == null
-                                  ? 'Save car'
-                                  : 'Save changes',
+                                  ? AppLocalizations.of(context)!.saveCar
+                                  : AppLocalizations.of(context)!.saveChanges,
                           style: const TextStyle(fontWeight: FontWeight.w700)),
                     ),
                   ],
@@ -347,8 +365,9 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
               child: FormField<DateTime>(
                 key: ValueKey('$title-$date'),
                 initialValue: date,
-                validator: (_) =>
-                    validateExpiryDate(date, original: _originalDate(title)),
+                validator: (_) => validateExpiryDate(date,
+                    localizations: AppLocalizations.of(context),
+                    original: _originalDate(title)),
                 builder: (field) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -377,7 +396,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                                             : now.year + 15,
                                         12,
                                         31),
-                                    helpText: '$title expiry',
+                                    helpText: AppLocalizations.of(context)!
+                                        .documentExpiry(title),
                                   );
                                   if (picked != null && mounted) {
                                     onDateSelected(picked);
@@ -394,7 +414,9 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                      Text('EXPIRY DATE',
+                                      Text(
+                                          AppLocalizations.of(context)!
+                                              .expiryDate,
                                           style: TextStyle(
                                               color: context.palette.muted,
                                               fontSize: 10,
@@ -403,8 +425,9 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                                       const SizedBox(height: 4),
                                       Text(
                                           date == null
-                                              ? 'Choose a date'
-                                              : Car.extractDate(
+                                              ? AppLocalizations.of(context)!
+                                                  .chooseADate
+                                              : localizedDate(context,
                                                   date.toIso8601String()),
                                           style: TextStyle(
                                               color: context.palette.ink,
@@ -431,12 +454,13 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
   }
 
   String? _originalDate(String title) {
-    const keys = {
-      'Car insurance': 'insurance_date',
-      'Car inspection': 'inspection_date',
-      'Romanian vignette': 'romanian_vignette_date',
-      'Hungarian vignette': 'hungarian_vignette_date',
-      'Austrian vignette': 'austrian_vignette_date',
+    final keys = {
+      AppLocalizations.of(context)!.carInsurance: 'insurance_date',
+      AppLocalizations.of(context)!.carInspection: 'inspection_date',
+      AppLocalizations.of(context)!.romanianVignette: 'romanian_vignette_date',
+      AppLocalizations.of(context)!.hungarianVignette:
+          'hungarian_vignette_date',
+      AppLocalizations.of(context)!.austrianVignette: 'austrian_vignette_date',
     };
     return widget.car?.items[keys[title]];
   }
@@ -455,24 +479,29 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
             initialValue: item['name'],
             enabled: !_saving,
             maxLength: 50,
-            decoration: const InputDecoration(
-                labelText: 'Expiry name', hintText: 'e.g. Parking permit'),
+            decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.expiryName,
+                hintText: AppLocalizations.of(context)!.eGParkingPermit),
             onChanged: (value) => item['name'] = value,
             validator: (value) {
               final name = (value ?? '').trim();
-              if (name.isEmpty) return 'Enter an expiry name.';
-              if (name.length > 50) return 'Use 50 characters or fewer.';
+              if (name.isEmpty) {
+                return AppLocalizations.of(context)!.enterAnExpiryName;
+              }
+              if (name.length > 50) {
+                return AppLocalizations.of(context)!.useCharactersOrFewer;
+              }
               if (_customExpiries.entries.any((other) =>
                   other.key != id &&
                   other.value['name']!.trim().toLowerCase() ==
                       name.toLowerCase())) {
-                return 'Use a different expiry name.';
+                return AppLocalizations.of(context)!.useADifferentExpiryName;
               }
               return null;
             },
           )),
           IconButton(
-              tooltip: 'Remove expiry',
+              tooltip: AppLocalizations.of(context)!.removeExpiry,
               onPressed: _saving
                   ? null
                   : () => setState(() => _customExpiries.remove(id)),
@@ -481,6 +510,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
         FormField<DateTime>(
           key: ValueKey('$id-$date'),
           validator: (_) => validateExpiryDate(date,
+              localizations: AppLocalizations.of(context),
               original: widget.car?.customExpiries[id]?['expiry_date']),
           builder: (field) =>
               Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -502,7 +532,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                                   : now.year + 15,
                               12,
                               31),
-                          helpText: 'Expiry date');
+                          helpText:
+                              AppLocalizations.of(context)!.expiryDateText);
                       if (picked != null && mounted) {
                         setState(() =>
                             item['expiry_date'] = picked.toIso8601String());
@@ -510,8 +541,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                     },
               icon: const Icon(Icons.calendar_today_outlined),
               label: Text(date == null
-                  ? 'Choose expiry date'
-                  : Car.extractDate(item['expiry_date']!)),
+                  ? AppLocalizations.of(context)!.chooseExpiryDate
+                  : localizedDate(context, item['expiry_date']!)),
             ),
             if (field.hasError)
               Text(field.errorText!,
@@ -528,34 +559,46 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
       carName = _carNameController.text.trim();
 
       if (carName.isEmpty) {
-        _showErrorPopUp("Please enter the registration number!", errorText);
+        _showErrorPopUp(
+            AppLocalizations.of(context)!.pleaseEnterTheRegistrationNumber,
+            errorText);
         return;
       }
 
       if (isInsuranceSelected && insuranceExpiringDate == null) {
         _showErrorPopUp(
-            "Please select the insurance expiration date!", errorText);
+            AppLocalizations.of(context)!
+                .pleaseSelectTheInsuranceExpirationDate,
+            errorText);
         return;
       }
       if (isInspectionSelected && inspectionExpiringDate == null) {
         _showErrorPopUp(
-            "Please select the inspection expiration date!", errorText);
+            AppLocalizations.of(context)!
+                .pleaseSelectTheInspectionExpirationDate,
+            errorText);
         return;
       }
       if (isRomanianVignetteSelected && romanianVignetteExpiringDate == null) {
         _showErrorPopUp(
-            "Please select the romanian vignette expiration date!", errorText);
+            AppLocalizations.of(context)!
+                .pleaseSelectTheRomanianVignetteExpirationDate,
+            errorText);
         return;
       }
       if (isHungarianVignetteSelected &&
           hungarianVignetteExpiringDate == null) {
         _showErrorPopUp(
-            "Please select the hungarian vignette expiration date!", errorText);
+            AppLocalizations.of(context)!
+                .pleaseSelectTheHungarianVignetteExpirationDate,
+            errorText);
         return;
       }
       if (isAustrianVignetteSelected && austrianVignetteExpiringDate == null) {
         _showErrorPopUp(
-            "Please select the austrian vignette expiration date!", errorText);
+            AppLocalizations.of(context)!
+                .pleaseSelectTheAustrianVignetteExpirationDate,
+            errorText);
         return;
       }
       setState(() => _saving = true);
@@ -615,7 +658,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
       debugPrintStack(stackTrace: stack);
       if (mounted) {
         _showErrorPopUp(
-            'Could not save your car. Please try again.', errorText);
+            AppLocalizations.of(context)!.couldNotSaveYourCarPleaseTryAgain,
+            errorText);
       }
       return;
     } catch (error, stack) {
@@ -623,7 +667,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
       debugPrintStack(stackTrace: stack);
       if (mounted) {
         _showErrorPopUp(
-            'Could not save your car. Please try again.', errorText);
+            AppLocalizations.of(context)!.couldNotSaveYourCarPleaseTryAgain,
+            errorText);
       }
       return;
     }
@@ -641,28 +686,32 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
         savedCar: carName,
         renamedFrom: widget.car?.name,
         savedDates: carData);
+    if (!mounted) return;
     notificationsOff = result == ReminderStatus.disabled;
     if (result == ReminderStatus.failed) {
-      reminderWarning = 'Car saved. Reminders will retry automatically.';
+      reminderWarning =
+          AppLocalizations.of(context)!.carSavedRemindersWillRetryAutomatically;
     } else if (notificationsOff) {
-      reminderWarning = 'Car saved. Notifications are disabled.';
+      reminderWarning =
+          AppLocalizations.of(context)!.carSavedNotificationsAreDisabled;
     }
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     Navigator.of(context).pop();
     mainScreenKey.currentState?.selectTab(1);
     messenger.showSnackBar(SnackBar(
-      content: Text(reminderWarning ?? 'Car saved.'),
+      content: Text(reminderWarning ?? AppLocalizations.of(context)!.carSaved),
       action: notificationsOff
           ? SnackBarAction(
-              label: 'Settings',
+              label: AppLocalizations.of(context)!.settings,
               onPressed: () async {
                 try {
                   await NotificationPermissionService().openSettings();
                 } catch (_) {
                   if (messenger.mounted) {
-                    messenger.showSnackBar(const SnackBar(
-                        content: Text('Could not open Settings.')));
+                    messenger.showSnackBar(SnackBar(
+                        content: Text(AppLocalizations.of(context)!
+                            .couldNotOpenSettings)));
                   }
                 }
               })
@@ -687,7 +736,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
                       mainScreenKey.currentState?.selectTab(1);
                     }
                   },
-                  child: const Text('OK'))
+                  child: Text(AppLocalizations.of(context)!.ok))
             ],
           );
         });

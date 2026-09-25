@@ -1,3 +1,4 @@
+import 'package:car_alerts/l10n/app_localizations.dart';
 import 'dart:async';
 import 'package:car_alerts/screens/delete_account_screen.dart';
 import 'package:car_alerts/theme/app_theme.dart';
@@ -9,6 +10,8 @@ Future<void> openScreen(
     WidgetTester tester, Future<void> Function(String?) onDelete,
     {bool password = true, bool dark = false}) async {
   await tester.pumpWidget(MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     theme: dark ? AppTheme.dark : AppTheme.light,
     home: Builder(
         builder: (context) => Scaffold(

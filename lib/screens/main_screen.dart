@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'package:car_alerts/main.dart';
 import 'package:car_alerts/screens/profile_screen.dart';
@@ -35,6 +36,7 @@ class MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isRomanian = Localizations.localeOf(context).languageCode == 'ro';
     return Scaffold(
       body: Center(
         child: _tabOptions.elementAt(_selectedIndex),
@@ -75,21 +77,25 @@ class MainScreenState extends State<MainScreen> {
             selectedIndex: _selectedIndex,
             onDestinationSelected: _onItemTapped,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.space_dashboard_outlined),
-                selectedIcon: Icon(Icons.space_dashboard_rounded),
-                label: 'Dashboard',
+                icon: Icon(isRomanian
+                    ? Icons.home_outlined
+                    : Icons.space_dashboard_outlined),
+                selectedIcon: Icon(isRomanian
+                    ? Icons.home_rounded
+                    : Icons.space_dashboard_rounded),
+                label: AppLocalizations.of(context)!.dashboard,
               ),
               NavigationDestination(
-                icon: Icon(Icons.directions_car_outlined),
-                selectedIcon: Icon(Icons.directions_car_rounded),
-                label: 'Your cars',
+                icon: const Icon(Icons.directions_car_outlined),
+                selectedIcon: const Icon(Icons.directions_car_rounded),
+                label: AppLocalizations.of(context)!.yourCars,
               ),
               NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings_rounded),
-                label: 'Settings',
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings_rounded),
+                label: AppLocalizations.of(context)!.settings,
               ),
             ],
           ),
