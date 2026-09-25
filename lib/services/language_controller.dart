@@ -1,3 +1,4 @@
+import 'crash_reporting_service.dart';
 import 'user_settings_service.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,13 +35,18 @@ class LanguageController extends ChangeNotifier {
     if (uid == null) return;
     unawaited(UserSettingsService(firestore: _firestore)
         .initializeForUser(uid)
-        .catchError((Object _) {/* Retry on the next sign-in when online. */}));
+        .catchError((Object error, StackTrace stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'initialize_language');
+    }));
     _subscription = _settings(uid).snapshots().listen((snapshot) {
       if (_binding != binding) return;
       final code = snapshot.data()?['language'];
       _locale = Locale(code == 'ro' ? 'ro' : 'en');
       notifyListeners();
-    }, onError: (Object error) {
+    }, onError: (Object error, StackTrace stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'load_language');
       // Retain the last known language while offline or unable to read.
     });
   }

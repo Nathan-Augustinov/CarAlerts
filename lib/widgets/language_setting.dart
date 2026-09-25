@@ -1,3 +1,4 @@
+import 'package:car_alerts/services/crash_reporting_service.dart';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/language_controller.dart';
@@ -72,7 +73,9 @@ class _LanguageSelectorState extends State<_LanguageSelector> {
                       try {
                         await widget.controller.select(value);
                         if (context.mounted) Navigator.of(context).pop();
-                      } catch (_) {
+                      } catch (error, stack) {
+                        CrashReportingService.instance
+                            .report(error, stack, operation: 'save_language');
                         if (mounted) setState(() => _failed = true);
                       }
                     },

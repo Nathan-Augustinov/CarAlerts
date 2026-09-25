@@ -1,3 +1,5 @@
+import '../services/crash_navigation_observer.dart';
+import '../services/crash_reporting_service.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'package:car_alerts/main.dart';
@@ -36,6 +38,11 @@ class MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    CrashNavigationObserver.homeScreen =
+        const ['dashboard', 'cars', 'settings'][_selectedIndex];
+    if (ModalRoute.of(context)?.isCurrent == true) {
+      CrashReportingService.instance.screen(CrashNavigationObserver.homeScreen);
+    }
     final isRomanian = Localizations.localeOf(context).languageCode == 'ro';
     return Scaffold(
       body: Center(

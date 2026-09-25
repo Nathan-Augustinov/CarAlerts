@@ -1,3 +1,4 @@
+import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../l10n/localized_content.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/calendar_day_refresh.dart';
@@ -31,8 +32,11 @@ class _CarsScreenState extends State<CarsScreen>
   late final _carsStream = _collection.snapshots();
 
   Future<void> _edit([Car? car]) async {
-    await Navigator.push(context,
-        MaterialPageRoute(builder: (_) => AddOrEditCarScreen(car: car)));
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            settings: const RouteSettings(name: 'car_editor'),
+            builder: (_) => AddOrEditCarScreen(car: car)));
     if (mounted) setState(() {});
   }
 
@@ -55,10 +59,14 @@ class _CarsScreenState extends State<CarsScreen>
       ),
     );
     if (confirmed != true) return;
+    CrashReportingService.instance.breadcrumb('car: delete_started');
     try {
       await _collection.doc(car.name).delete();
+      CrashReportingService.instance.breadcrumb('car: delete_succeeded');
       await NotificationsService.instance.refresh();
-    } catch (_) {
+    } catch (error, stack) {
+      CrashReportingService.instance
+          .report(error, stack, operation: 'delete_car');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
@@ -75,6 +83,11 @@ class _CarsScreenState extends State<CarsScreen>
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: _carsStream,
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              CrashReportingService.instance.report(
+                  snapshot.error!, snapshot.stackTrace ?? StackTrace.current,
+                  operation: 'cars_screen_load');
+            }
             final cars = snapshot.data?.docs
                     .map((doc) => Car.fromMap(doc.data(), doc.id))
                     .toList() ??
@@ -215,8 +228,7 @@ class _CarsScreenState extends State<CarsScreen>
                           childCount: visible.length,
                         )),
                       ),
-                    const SliverToBoxAdapter(
-                        child: SizedBox(height: 100)),
+                    const SliverToBoxAdapter(child: SizedBox(height: 100)),
                   ],
                 ),
               ),
