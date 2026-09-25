@@ -1,3 +1,4 @@
+import 'package:car_alerts/l10n/device_language.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:car_alerts/l10n/app_localizations.dart';
@@ -21,6 +22,81 @@ class LocalizedBackend extends MemoryReminders {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('phone language selects Romanian across regions and scripts', () {
+    for (final locale in const [
+      Locale('ro'),
+      Locale('ro', 'RO'),
+      Locale('ro', 'MD'),
+      Locale.fromSubtags(
+          languageCode: 'ro', scriptCode: 'Latn', countryCode: 'MD'),
+    ]) {
+      expect(deviceLanguage(locale), const Locale('ro'));
+      final controller = LanguageController(phoneLocale: locale);
+      expect(controller.locale, const Locale('ro'));
+      controller.dispose();
+    }
+    for (final locale in const [Locale('en'), Locale('fr'), Locale('de')]) {
+      expect(deviceLanguage(locale), const Locale('en'));
+    }
+  });
+
+  testWidgets('settings initialization reads the actual phone locale',
+      (tester) async {
+    tester.binding.platformDispatcher.localeTestValue =
+        const Locale('ro', 'MD');
+    addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
+    final db = FakeFirebaseFirestore();
+    final service = UserSettingsService(firestore: db);
+    await service.initializeForUser('new');
+    expect(
+        (await db.doc('users/new/settings/user_settings').get())
+            .data()?['language'],
+        'ro');
+    final controller = LanguageController(firestore: db);
+    expect(controller.locale, const Locale('ro'));
+    controller.dispose();
+  });
+
+  test(
+      'Romanian default is saved only when absent; manual choice survives restart',
+      () async {
+    final db = FakeFirebaseFirestore();
+    final controller = LanguageController(
+        firestore: db, phoneLocale: const Locale('ro', 'MD'));
+    addTearDown(controller.dispose);
+    controller.bindUser('new');
+    await Future<void>.delayed(Duration.zero);
+    expect(controller.locale, const Locale('ro'));
+    expect(
+        (await db.doc('users/new/settings/user_settings').get())
+            .data()?['language'],
+        'ro');
+    await controller.select('en');
+    controller.bindUser(null);
+    expect(controller.locale, const Locale('ro'));
+    final restarted = LanguageController(
+        firestore: db, phoneLocale: const Locale('ro', 'RO'));
+    addTearDown(restarted.dispose);
+    restarted.bindUser('new');
+    await Future<void>.delayed(Duration.zero);
+    expect(restarted.locale, const Locale('en'));
+    await UserSettingsService(firestore: db)
+        .initializeForUser('new', initialLanguage: 'ro');
+    expect(
+        (await db.doc('users/new/settings/user_settings').get())
+            .data()?['language'],
+        'en');
+    await restarted.select('ro');
+    final englishPhone = LanguageController(
+        firestore: db, phoneLocale: const Locale('en', 'US'));
+    addTearDown(englishPhone.dispose);
+    englishPhone.bindUser('new');
+    await Future<void>.delayed(Duration.zero);
+    expect(englishPhone.locale, const Locale('ro'));
+  });
+
   test('catalogs have matching keys and Romanian plural forms', () {
     final en =
         jsonDecode(File('lib/l10n/app_en.arb').readAsStringSync()) as Map;
