@@ -1,4 +1,4 @@
-package com.example.car_alerts
+package com.nathanaugustinov.caralerts
 
 import android.Manifest
 import android.content.Intent

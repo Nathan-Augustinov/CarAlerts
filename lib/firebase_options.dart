@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBU30IlODSYCZ2uxZjCqovLTZv9oY9hi-M',
-    appId: '1:1004713708148:android:41b1c9c2f336f814719f21',
+    appId: '1:1004713708148:android:a46e527424b11456719f21',
     messagingSenderId: '1004713708148',
     projectId: 'caralerts-b4390',
     databaseURL: 'https://caralerts-b4390-default-rtdb.europe-west1.firebasedatabase.app',
@@ -60,10 +60,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDbhXAJc-o32KJ_2ujVvYJpZqGIfW0iayM',
-    appId: '1:1004713708148:ios:e73879c23fe1a329719f21',
+    appId: '1:1004713708148:ios:787b11d08fd6cfb7719f21',
     messagingSenderId: '1004713708148',
     projectId: 'caralerts-b4390',
-    storageBucket: 'caralerts-b4390.appspot.com',
-    iosBundleId: 'com.example.carAlerts',
+    storageBucket: 'caralerts-b4390.firebasestorage.app',
+    iosBundleId: 'com.nathanaugustinov.caralerts',
   );
 }

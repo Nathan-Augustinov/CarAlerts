@@ -36,14 +36,14 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.1004713708148-objf87vcr6c7n88jnd1u4d8f2kcaphs3</string>
+				<string>com.googleusercontent.apps.1004713708148-2gjr353oqas26r5dlsjsadc2i2q2v5g3</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>GIDClientID</key>
-	<string>1004713708148-objf87vcr6c7n88jnd1u4d8f2kcaphs3.apps.googleusercontent.com</string>
+	<string>1004713708148-2gjr353oqas26r5dlsjsadc2i2q2v5g3.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>1004713708148-objf87vcr6c7n88jnd1u4d8f2kcaphs3.apps.googleusercontent.com</string>
+	<string>1004713708148-2gjr353oqas26r5dlsjsadc2i2q2v5g3.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.1004713708148-objf87vcr6c7n88jnd1u4d8f2kcaphs3</string>
+	<string>com.googleusercontent.apps.1004713708148-2gjr353oqas26r5dlsjsadc2i2q2v5g3</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>1004713708148-8u3sff7aj5njshj8vb5nm6bp7chr0la0.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,11 +15,11 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.carAlerts</string>
+	<string>com.nathanaugustinov.caralerts</string>
 	<key>PROJECT_ID</key>
 	<string>caralerts-b4390</string>
 	<key>STORAGE_BUCKET</key>
-	<string>caralerts-b4390.appspot.com</string>
+	<string>caralerts-b4390.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:1004713708148:ios:e73879c23fe1a329719f21</string>
+	<string>1:1004713708148:ios:787b11d08fd6cfb7719f21</string>
 	<key>DATABASE_URL</key>
 	<string>https://caralerts-b4390-default-rtdb.europe-west1.firebasedatabase.app</string>
 </dict>
