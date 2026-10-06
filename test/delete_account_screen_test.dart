@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 Future<void> openScreen(
     WidgetTester tester, Future<void> Function(String?) onDelete,
-    {bool password = true, bool dark = false}) async {
+    {bool password = true, bool dark = false, bool apple = false}) async {
   await tester.pumpWidget(MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -22,6 +22,7 @@ Future<void> openScreen(
                 builder: (_) => DeleteAccountScreen(
                     email: 'test@example.com',
                     requiresPassword: password,
+                    usesApple: apple,
                     onDelete: onDelete),
               )),
             ))),
@@ -39,6 +40,21 @@ Future<void> requestDeletion(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('Apple deletion verifies with Apple and handles cancellation',
+      (tester) async {
+    await openScreen(tester, (_) async {
+      throw FirebaseAuthException(code: 'canceled');
+    }, password: false, apple: true);
+    expect(find.textContaining('Apple will ask'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNothing);
+    await requestDeletion(tester);
+    await tester.tap(find.text('Verify with Apple & delete'));
+    await tester.pumpAndSettle();
+    expect(find.text('Verification cancelled. Your account has not been deleted.'),
+        findsOneWidget);
+    expect(find.byType(DeleteAccountScreen), findsOneWidget);
+  });
+
   testWidgets('password is required before confirmation', (tester) async {
     await openScreen(tester, (_) async => fail('Must not delete'));
     await requestDeletion(tester);

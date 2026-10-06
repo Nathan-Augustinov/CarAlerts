@@ -312,6 +312,16 @@ class AppLocalizationsRo extends AppLocalizations {
   String get signInWithGoogle => 'Autentifică-te cu Google';
 
   @override
+  String get signInWithApple => 'Autentifică-te cu Apple';
+
+  @override
+  String get verifyWithAppleDelete => 'Verifică prin Apple și șterge';
+
+  @override
+  String get appleDeletion =>
+      'Apple îți va cere să îți confirmi identitatea. Folosește contul Apple asociat acestui cont CarAlerts. După verificare, contul CarAlerts va fi șters definitiv. Contul Apple nu va fi șters.';
+
+  @override
   String get thisCarAndItsSavedExpiryDatesWillBeRemoved =>
       'Această mașină și datele sale de expirare vor fi șterse.';
 

@@ -60,9 +60,12 @@ class AccountDeletionService {
         stage = 'cars cleanup';
         await _deleteCollection(cars.collection('user_cars'), user.uid);
         _checkUser(user.uid);
-        // These parent paths are containers only: the app stores all data in
-        // their subcollections. Deleting nonexistent parents still requires
-        // separate Firestore permissions and can block Auth deletion.
+        stage = 'parent document cleanup';
+        final parents = _firestore.batch();
+        parents.delete(cars);
+        parents.delete(profile);
+        await parents.commit();
+        _checkUser(user.uid);
         // Keep authentication until data cleanup succeeds so a failure remains
         // retryable under the same user's security rules.
         stage = 'account removal';

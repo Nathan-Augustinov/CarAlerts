@@ -50,6 +50,8 @@ app.*.map.json
 /ios/Runner/GoogleService-Info.plist
 
 .env
+# Apple private authentication keys
+*.p8
 /linux/
 /macos/
 /windows/

@@ -309,6 +309,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signInWithGoogle => 'Sign in with Google';
 
   @override
+  String get signInWithApple => 'Sign in with Apple';
+
+  @override
+  String get verifyWithAppleDelete => 'Verify with Apple & delete';
+
+  @override
+  String get appleDeletion =>
+      'Apple will ask you to confirm your identity. Use the Apple Account linked to this CarAlerts account. After verification, your CarAlerts account will be permanently deleted. Your Apple Account will not be deleted.';
+
+  @override
   String get thisCarAndItsSavedExpiryDatesWillBeRemoved =>
       'This car and its saved expiry dates will be removed.';
 

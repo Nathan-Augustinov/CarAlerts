@@ -54,6 +54,10 @@ void main() {
     steps = [];
     failReauthentication = false;
     failReminders = false;
+    await db.doc('cars/a').set({'owner': 'a'});
+    await db.doc('users/a').set({'name': 'Account A'});
+    await db.doc('cars/b').set({'owner': 'b'});
+    await db.doc('users/b').set({'name': 'Account B'});
     await db.doc('cars/a/user_cars/CAR').set({'insurance_date': '2027-01-01'});
     await db.doc('users/a/settings/user_settings').set({'darkMode': false});
 
@@ -75,9 +79,11 @@ void main() {
     expect(steps, ['verify', 'reminders', 'identity']);
     expect(user.deleted, isTrue);
     expect((await db.doc('cars/b/user_cars/OTHER').get()).exists, isTrue);
+    expect((await db.doc('cars/b').get()).exists, isTrue);
+    expect((await db.doc('users/b').get()).exists, isTrue);
   });
 
-  test('subcollection-only permissions allow account deletion', () async {
+  test('denied parent deletion preserves identity for retry', () async {
     db.securityRules = FakeFirebaseFirestore(securityRules: '''
       service cloud.firestore {
         match /databases/{database}/documents {
@@ -86,8 +92,9 @@ void main() {
         }
       }
     ''').securityRules;
-    await service().delete(password: 'verified');
-    expect(user.deleted, isTrue);
+    await expectLater(service().delete(password: 'verified'),
+        throwsA(isA<AccountDeletionException>()));
+    expect(user.deleted, isFalse);
     expect((await db.collection('cars/a/user_cars').get()).docs, isEmpty);
     expect((await db.collection('users/a/settings').get()).docs, isEmpty);
   });
@@ -96,6 +103,8 @@ void main() {
     db.securityRules = FakeFirebaseFirestore(securityRules: '''
       service cloud.firestore {
         match /databases/{database}/documents {
+          match /cars/{uid} { allow delete: if true; }
+          match /users/{uid} { allow delete: if true; }
           match /cars/{uid}/user_cars/{car} { allow read, write: if true; }
           match /users/{uid}/settings/user_settings {
             allow write: if true;

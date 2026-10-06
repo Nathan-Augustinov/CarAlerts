@@ -36,6 +36,23 @@ class AuthenticationService {
     return result.user;
   }
 
+  Future<User?> signInWithApple() async {
+    try {
+      final provider = AppleAuthProvider()
+        ..addScope('email')
+        ..addScope('name');
+      final result = await _firebaseAuth.signInWithProvider(provider);
+      return result.user;
+    } on FirebaseAuthException catch (error) {
+      if (error.code == 'canceled' ||
+          error.code == 'web-context-canceled' ||
+          error.code == 'user-cancelled') {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
   Future<User?> createAccount(String email, String password) async {
     final result = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email.trim(), password: password);
@@ -44,6 +61,15 @@ class AuthenticationService {
 
   Future<void> reauthenticateForDeletion(User user, String? password) async {
     final providers = user.providerData.map((provider) => provider.providerId);
+    if (providers.contains('apple.com')) {
+      final result = await user.reauthenticateWithProvider(AppleAuthProvider());
+      final authorizationCode = result.additionalUserInfo?.authorizationCode;
+      if (authorizationCode != null) {
+        await _firebaseAuth.revokeTokenWithAuthorizationCode(authorizationCode);
+      }
+      await user.getIdToken(true);
+      return;
+    }
     final AuthCredential credential;
     if (providers.contains('password') && user.email != null) {
       if (password == null || password.isEmpty) {

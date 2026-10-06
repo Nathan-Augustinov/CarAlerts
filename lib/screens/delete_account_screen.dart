@@ -11,10 +11,12 @@ class DeleteAccountScreen extends StatefulWidget {
     required this.email,
     required this.requiresPassword,
     required this.onDelete,
+    this.usesApple = false,
   });
 
   final String? email;
   final bool requiresPassword;
+  final bool usesApple;
   final Future<void> Function(String? password) onDelete;
 
   @override
@@ -52,7 +54,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
             style: TextButton.styleFrom(foregroundColor: context.palette.error),
             child: Text(widget.requiresPassword
                 ? AppLocalizations.of(context)!.deletePermanently
-                : AppLocalizations.of(context)!.verifyWithGoogleDelete),
+                : widget.usesApple
+                    ? AppLocalizations.of(context)!.verifyWithAppleDelete
+                    : AppLocalizations.of(context)!.verifyWithGoogleDelete),
           ),
         ],
       ),
@@ -98,6 +102,11 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
           widget.email ?? AppLocalizations.of(context)!.googleAccountAbove);
 
   String _authError(String code) => switch (code) {
+        'canceled' ||
+        'web-context-canceled' ||
+        'user-cancelled' =>
+          AppLocalizations.of(context)!
+              .verificationCancelledYourAccountHasNotBeenDeleted,
         'invalid-credential' ||
         'wrong-password' ||
         'missing-password' =>
@@ -105,7 +114,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               ? AppLocalizations.of(context)!
                   .yourPasswordWasNotAcceptedPleaseCheckItAndTryAgain
               : AppLocalizations.of(context)!
-                  .couldNotVerifyYourGoogleAccountPleaseTryAgain,
+                  .couldNotVerifyYourAccountPleaseSignInAgainAndRetry,
         'user-mismatch' => AppLocalizations.of(context)!.differentAccount(
             widget.email ?? AppLocalizations.of(context)!.accountBeingDeleted),
         'requires-recent-login' => AppLocalizations.of(context)!
@@ -198,7 +207,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                               : null,
                         )
                       else
-                        Text(_googleVerification,
+                        Text(
+                            widget.usesApple
+                                ? AppLocalizations.of(context)!.appleDeletion
+                                : _googleVerification,
                             style: TextStyle(
                                 color: context.palette.muted, height: 1.5)),
                       if (_error != null) ...[

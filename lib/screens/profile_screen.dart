@@ -354,8 +354,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                           settings: const RouteSettings(name: 'delete_account'),
                           builder: (_) => DeleteAccountScreen(
                             email: user.email,
-                            requiresPassword: user.providerData.any(
-                                (provider) =>
+                            usesApple: user.providerData.any((provider) =>
+                                provider.providerId == 'apple.com'),
+                            requiresPassword: !user.providerData.any(
+                                    (provider) =>
+                                        provider.providerId == 'apple.com') &&
+                                user.providerData.any((provider) =>
                                     provider.providerId == 'password'),
                             onDelete: (password) =>
                                 service.delete(password: password),

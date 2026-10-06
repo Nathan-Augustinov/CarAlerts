@@ -652,6 +652,24 @@ abstract class AppLocalizations {
   /// **'Sign in with Google'**
   String get signInWithGoogle;
 
+  /// No description provided for @signInWithApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get signInWithApple;
+
+  /// No description provided for @verifyWithAppleDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify with Apple & delete'**
+  String get verifyWithAppleDelete;
+
+  /// No description provided for @appleDeletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple will ask you to confirm your identity. Use the Apple Account linked to this CarAlerts account. After verification, your CarAlerts account will be permanently deleted. Your Apple Account will not be deleted.'**
+  String get appleDeletion;
+
   /// No description provided for @thisCarAndItsSavedExpiryDatesWillBeRemoved.
   ///
   /// In en, this message translates to:

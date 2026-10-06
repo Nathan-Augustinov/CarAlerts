@@ -85,10 +85,13 @@ class _SignInScreenState extends State<SignInScreen> {
       } else {
         final user = operation == 'google'
             ? await _authService.signInWithGoogle()
-            : _creatingAccount
-                ? await _authService.createAccount(_email.text, _password.text)
-                : await _authService.signInWithEmail(
-                    _email.text, _password.text);
+            : operation == 'apple'
+                ? await _authService.signInWithApple()
+                : _creatingAccount
+                    ? await _authService.createAccount(
+                        _email.text, _password.text)
+                    : await _authService.signInWithEmail(
+                        _email.text, _password.text);
         if (user != null) {
           // Authentication state controls navigation. Settings failures must not
           // report that a successfully authenticated account failed to sign in.
@@ -394,6 +397,41 @@ class _SignInScreenState extends State<SignInScreen> {
                                       ? AppLocalizations.of(context)!.signingIn
                                       : AppLocalizations.of(context)!
                                           .signInWithGoogle,
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600)),
+                            )),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: context.palette.surface,
+                                foregroundColor: context.palette.ink,
+                                disabledBackgroundColor:
+                                    context.palette.surface,
+                                side: BorderSide(color: context.palette.border),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                              ),
+                              onPressed: _signingIn
+                                  ? null
+                                  : () => _authenticate('apple'),
+                              icon: _operation == 'apple'
+                                  ? SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: context.palette.accent))
+                                  : const Icon(Icons.apple, size: 24),
+                              label: Text(
+                                  _operation == 'apple'
+                                      ? AppLocalizations.of(context)!.signingIn
+                                      : AppLocalizations.of(context)!
+                                          .signInWithApple,
                                   style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w600)),
