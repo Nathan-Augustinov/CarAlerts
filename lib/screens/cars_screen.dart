@@ -1,3 +1,5 @@
+import '../services/car_store.dart';
+import '../widgets/local_mode_actions.dart';
 import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../l10n/localized_content.dart';
 import '../l10n/app_localizations.dart';
@@ -5,8 +7,6 @@ import '../widgets/calendar_day_refresh.dart';
 import '../theme/app_theme.dart';
 import '../services/notifications_service.dart';
 import 'package:car_alerts/screens/add_or_edit_car_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/car.dart';
 
@@ -21,17 +21,13 @@ class CarsScreen extends StatefulWidget {
 
 class _CarsScreenState extends State<CarsScreen>
     with WidgetsBindingObserver, CalendarDayRefresh<CarsScreen> {
-  final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  final _store = CarStore.current();
   _Filter _filter = _Filter.all;
-
-  CollectionReference<Map<String, dynamic>> get _collection =>
-      FirebaseFirestore.instance
-          .collection('cars')
-          .doc(currentUserId)
-          .collection('user_cars');
-  late final _carsStream = _collection.snapshots();
+  late final _carsStream = _store.watch();
 
   Future<void> _edit([Car? car]) async {
+    if (car == null && !await allowLocalCarCreation(context)) return;
+    if (!mounted) return;
     await Navigator.push(
         context,
         MaterialPageRoute(
@@ -61,7 +57,7 @@ class _CarsScreenState extends State<CarsScreen>
     if (confirmed != true) return;
     CrashReportingService.instance.breadcrumb('car: delete_started');
     try {
-      await _collection.doc(car.name).delete();
+      await _store.delete(car.name);
       CrashReportingService.instance.breadcrumb('car: delete_succeeded');
       await NotificationsService.instance.refresh();
     } catch (error, stack) {
@@ -80,7 +76,7 @@ class _CarsScreenState extends State<CarsScreen>
     return Scaffold(
       backgroundColor: context.palette.background,
       body: SafeArea(
-        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        child: StreamBuilder<Map<String, Map<String, dynamic>>>(
           stream: _carsStream,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
@@ -88,8 +84,8 @@ class _CarsScreenState extends State<CarsScreen>
                   snapshot.error!, snapshot.stackTrace ?? StackTrace.current,
                   operation: 'cars_screen_load');
             }
-            final cars = snapshot.data?.docs
-                    .map((doc) => Car.fromMap(doc.data(), doc.id))
+            final cars = snapshot.data?.entries
+                    .map((doc) => Car.fromMap(doc.value, doc.key))
                     .toList() ??
                 <Car>[];
             cars.sort((a, b) {
@@ -236,6 +232,7 @@ class _CarsScreenState extends State<CarsScreen>
           },
         ),
       ),
+      floatingActionButtonLocation: const _CarContentFabLocation(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _edit(),
         backgroundColor: context.palette.accent,
@@ -449,4 +446,24 @@ class _EmptyState extends StatelessWidget {
               style: TextStyle(color: context.palette.muted, height: 1.5)),
         ]),
       );
+}
+
+/// Align the button with the cards, including the centered column on wide screens.
+class _CarContentFabLocation extends FloatingActionButtonLocation {
+  const _CarContentFabLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry geometry) {
+    final standard = FloatingActionButtonLocation.endFloat.getOffset(geometry);
+    final safeWidth = geometry.scaffoldSize.width -
+        geometry.minInsets.left -
+        geometry.minInsets.right;
+    final contentWidth = safeWidth.clamp(0.0, 720.0);
+    final contentRight =
+        geometry.minInsets.left + (safeWidth + contentWidth) / 2;
+    return Offset(
+      contentRight - 24 - geometry.floatingActionButtonSize.width,
+      standard.dy,
+    );
+  }
 }

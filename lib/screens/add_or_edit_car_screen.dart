@@ -1,3 +1,6 @@
+import '../services/car_store.dart';
+import '../services/local_car_store.dart';
+import '../widgets/local_mode_actions.dart';
 import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../l10n/localized_content.dart';
 import '../l10n/app_localizations.dart';
@@ -11,7 +14,6 @@ import 'package:car_alerts/services/notifications_service.dart';
 import 'package:car_alerts/services/notification_permission_service.dart';
 import '../services/car_service.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class AddOrEditCarScreen extends StatefulWidget {
   final Car? car;
@@ -42,7 +44,8 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
 
   String get errorText => AppLocalizations.of(context)!.error;
   String get successText => AppLocalizations.of(context)!.success;
-  final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  final _store = CarStore.current();
+  String get currentUserId => _store.owner;
 
   @override
   void initState() {
@@ -635,8 +638,7 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
 
     CrashReportingService.instance.breadcrumb('car: save_started');
     try {
-      carData = await CarService().save(
-        userId: currentUserId,
+      carData = await _store.save(
         registration: carName,
         previousRegistration: widget.car?.name,
         originalDates: widget.car == null
@@ -651,6 +653,9 @@ class _AddOrEditCarScreenState extends State<AddOrEditCarScreen> {
               },
         dates: carData,
       );
+    } on LocalCarLimitException {
+      if (mounted) await showLocalCarLimit(context);
+      return;
     } on CarSaveException catch (error) {
       if (mounted) _showErrorPopUp(error.message, errorText);
       return;

@@ -254,5 +254,54 @@
   "appVersion": "Versiunea aplicației",
   "unavailable": "Indisponibil",
   "languageEnglish": "Engleză",
-  "languageRomanian": "Română"
+  "languageRomanian": "Română",
+  "continueWithoutAccount": "Continuă fără cont",
+  "localModeDescription": "Salvează o mașină pe acest dispozitiv și primește notificări înainte de expirare. Autentifică-te pentru a salva mai multe mașini online și a le accesa de pe alte dispozitive.",
+  "usingWithoutAccount": "Folosești aplicația fără cont",
+  "localDataNotice": "Datele sunt salvate doar pe acest dispozitiv și se pot pierde dacă dezinstalezi aplicația.",
+  "localCarLimitTitle": "Ai deja o mașină salvată pe acest dispozitiv",
+  "localCarLimitBody": "Fără cont, poți salva o singură mașină. Autentifică-te pentru a adăuga mai multe mașini și a le accesa de pe alte dispozitive.",
+  "localMaybeLater": "Mai târziu",
+  "localTransferTitle": "Muți mașina în cont?",
+  "localTransferBody": "Vrei să muți mașina {registration} și datele de expirare de pe acest dispozitiv în contul tău?",
+  "@localTransferBody": {
+    "placeholders": {
+      "registration": {
+        "type": "String"
+      }
+    }
+  },
+  "localTransferMove": "Mută în contul meu",
+  "localTransferDelete": "Șterge de pe acest dispozitiv",
+  "localDeleteTitle": "Ștergi mașina de pe acest dispozitiv?",
+  "localDeleteBody": "Mașina {registration} și datele sale de expirare vor fi șterse de pe acest dispozitiv. Această acțiune nu poate fi anulată.",
+  "@localDeleteBody": {
+    "placeholders": {
+      "registration": {
+        "type": "String"
+      }
+    }
+  },
+  "localDeleteContinue": "Șterge și continuă",
+  "localGoBack": "Înapoi",
+  "localDuplicateTitle": "Această mașină există deja în cont",
+  "localDuplicateBody": "Pentru {registration}, există date de expirare salvate atât pe acest dispozitiv, cât și în contul tău. Ce date vrei să păstrezi?",
+  "@localDuplicateBody": {
+    "placeholders": {
+      "registration": {
+        "type": "String"
+      }
+    }
+  },
+  "localUseDevice": "Folosește datele de pe acest dispozitiv",
+  "localKeepAccount": "Păstrează datele din contul meu",
+  "localTransferSaving": "Se salvează mașina în cont…",
+  "localTransferSuccess": "Mașina a fost salvată în cont.",
+  "localTransferFailure": "Nu am putut salva mașina în cont. Datele sunt în continuare păstrate pe acest dispozitiv. Încearcă din nou.",
+  "localTryAgain": "Încearcă din nou",
+  "localDeviceDates": "Pe acest dispozitiv",
+  "localAccountDates": "În contul tău",
+  "signInBenefits": "Autentifică-te pentru mai multe mașini și acces de pe alte dispozitive.",
+  "settingsSignInWithCar": "Gestionează mai multe mașini de pe orice dispozitiv. Păstrează și mașina salvată.",
+  "settingsSignInWithoutCar": "Autentifică-te pentru a gestiona mai multe mașini de pe orice dispozitiv."
 }

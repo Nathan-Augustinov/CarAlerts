@@ -82,6 +82,22 @@ import UserNotifications
         }
       }
       switch call.method {
+      case "loadLocalData", "saveLocalData":
+        do {
+          let directory = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+          let file = directory.appendingPathComponent("local-car.json")
+          if call.method == "loadLocalData" {
+            result(FileManager.default.fileExists(atPath: file.path) ? try String(contentsOf: file, encoding: .utf8) : "{}")
+          } else {
+            guard let value = call.arguments as? String else {
+              result(FlutterError(code: "invalid_data", message: "Invalid local data", details: nil)); return
+            }
+            try value.write(to: file, atomically: true, encoding: .utf8)
+            result(nil)
+          }
+        } catch {
+          result(FlutterError(code: "storage_failed", message: error.localizedDescription, details: nil))
+        }
       case "timezone": result(TimeZone.current.identifier)
       case "loadReminderIds": result(UserDefaults.standard.string(forKey: "reminder_ids") ?? "{}")
       case "saveReminderIds":

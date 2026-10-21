@@ -1,15 +1,17 @@
 # Localization
 
 The app uses Flutter's `flutter_localizations` and `gen-l10n`. Before sign-in,
-the phone's primary language selects Romanian for any `ro` locale (including
-Romania and Moldova); other languages select English. This initial locale is
-available immediately on the welcome screen.
+a saved device language is used when available. Otherwise the phone's primary
+language selects Romanian for any `ro` locale (including Romania and Moldova);
+other languages select English. This locale is available on the welcome screen.
 
 Saved account preferences always take priority. On sign-in/account restoration,
 a missing language is initialized from the phone; existing values, including
 previously defaulted English, stay unchanged. Manual changes in Settings update
-the app, pending reminders, and Firestore. Signing out returns to the initial
-phone-based language; signing back in restores the account preference. Phone
+the app, pending reminders, and Firestore. In local mode, changes persist in the
+separate device record. Signing out returns to that device preference, or the
+initial phone-based language if none is saved; signing back in restores the
+account preference. Phone
 language changes do not overwrite a saved account preference. Firestore's mobile
 cache supports offline reads. OS-owned dialogs follow the operating system's own
 language rules.

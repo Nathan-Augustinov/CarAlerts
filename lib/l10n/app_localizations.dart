@@ -1629,6 +1629,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Romanian'**
   String get languageRomanian;
+
+  /// No description provided for @continueWithoutAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without an account'**
+  String get continueWithoutAccount;
+
+  /// No description provided for @localModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Save one car on this device and receive reminders. Sign in to save multiple cars online and access them across devices.'**
+  String get localModeDescription;
+
+  /// No description provided for @usingWithoutAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Using without an account'**
+  String get usingWithoutAccount;
+
+  /// No description provided for @localDataNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is saved only on this device and may be lost if you uninstall the app.'**
+  String get localDataNotice;
+
+  /// No description provided for @localCarLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a car saved on this device'**
+  String get localCarLimitTitle;
+
+  /// No description provided for @localCarLimitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Without an account, you can save one car. Sign in to add multiple cars and access them across devices.'**
+  String get localCarLimitBody;
+
+  /// No description provided for @localMaybeLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe later'**
+  String get localMaybeLater;
+
+  /// No description provided for @localTransferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move your car to your account?'**
+  String get localTransferTitle;
+
+  /// No description provided for @localTransferBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {registration} and its expiry dates from this device to your account?'**
+  String localTransferBody(String registration);
+
+  /// No description provided for @localTransferMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to my account'**
+  String get localTransferMove;
+
+  /// No description provided for @localTransferDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete from this device'**
+  String get localTransferDelete;
+
+  /// No description provided for @localDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this car from your device?'**
+  String get localDeleteTitle;
+
+  /// No description provided for @localDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{registration} and its expiry dates will be deleted from this device. This cannot be undone.'**
+  String localDeleteBody(String registration);
+
+  /// No description provided for @localDeleteContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete and continue'**
+  String get localDeleteContinue;
+
+  /// No description provided for @localGoBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get localGoBack;
+
+  /// No description provided for @localDuplicateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This car already exists in your account'**
+  String get localDuplicateTitle;
+
+  /// No description provided for @localDuplicateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{registration} has expiry dates saved both on this device and in your account. Which would you like to keep?'**
+  String localDuplicateBody(String registration);
+
+  /// No description provided for @localUseDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this device’s data'**
+  String get localUseDevice;
+
+  /// No description provided for @localKeepAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my account’s data'**
+  String get localKeepAccount;
+
+  /// No description provided for @localTransferSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving your car to your account…'**
+  String get localTransferSaving;
+
+  /// No description provided for @localTransferSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your car has been saved to your account.'**
+  String get localTransferSuccess;
+
+  /// No description provided for @localTransferFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn’t save your car to your account. Your data is still saved on this device. Please try again.'**
+  String get localTransferFailure;
+
+  /// No description provided for @localTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get localTryAgain;
+
+  /// No description provided for @localDeviceDates.
+  ///
+  /// In en, this message translates to:
+  /// **'On this device'**
+  String get localDeviceDates;
+
+  /// No description provided for @localAccountDates.
+  ///
+  /// In en, this message translates to:
+  /// **'In your account'**
+  String get localAccountDates;
+
+  /// No description provided for @signInBenefits.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in for multiple cars and access across devices.'**
+  String get signInBenefits;
+
+  /// No description provided for @settingsSignInWithCar.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage multiple cars across devices. Bring your saved car with you.'**
+  String get settingsSignInWithCar;
+
+  /// No description provided for @settingsSignInWithoutCar.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to manage multiple cars across devices.'**
+  String get settingsSignInWithoutCar;
 }
 
 class _AppLocalizationsDelegate

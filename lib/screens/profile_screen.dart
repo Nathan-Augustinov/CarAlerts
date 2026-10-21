@@ -1,3 +1,5 @@
+import '../services/local_car_store.dart';
+import '../widgets/local_mode_actions.dart';
 import '../widgets/crashlytics_test_controls.dart';
 import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../services/language_controller.dart';
@@ -228,7 +230,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      Text(AppLocalizations.of(context)!.yourAccount,
+                      Text(
+                          user == null
+                              ? 'CarAlerts'
+                              : AppLocalizations.of(context)!.yourAccount,
                           style: TextStyle(
                               color: context.palette.bannerAccent,
                               fontSize: 10,
@@ -236,15 +241,22 @@ class _ProfileScreenState extends State<ProfileScreen>
                               letterSpacing: 1.5)),
                       const SizedBox(height: 8),
                       Text(
-                          name == null || name.isEmpty
-                              ? AppLocalizations.of(context)!.yourProfile
-                              : name,
+                          user == null
+                              ? AppLocalizations.of(context)!
+                                  .usingWithoutAccount
+                              : name == null || name.isEmpty
+                                  ? AppLocalizations.of(context)!.yourProfile
+                                  : name,
                           style: TextStyle(
                               color: context.palette.onBanner,
                               fontSize: 22,
                               fontWeight: FontWeight.w700)),
                       const SizedBox(height: 6),
-                      Text(user?.email ?? AppLocalizations.of(context)!.noEmail,
+                      Text(
+                          user == null
+                              ? AppLocalizations.of(context)!.localDataNotice
+                              : user.email ??
+                                  AppLocalizations.of(context)!.noEmail,
                           style: TextStyle(
                               color: context.palette.bannerMuted,
                               fontSize: 13,
@@ -308,14 +320,27 @@ class _ProfileScreenState extends State<ProfileScreen>
                 title: Text(
                     _signingOut
                         ? AppLocalizations.of(context)!.signingOut
-                        : AppLocalizations.of(context)!.signOut,
+                        : user == null
+                            ? AppLocalizations.of(context)!.signIn
+                            : AppLocalizations.of(context)!.signOut,
                     style: TextStyle(
                         color: context.palette.error,
                         fontSize: 15,
                         fontWeight: FontWeight.w700)),
-                subtitle: Text(AppLocalizations.of(context)!.carsStaySaved,
+                subtitle: ListenableBuilder(
+                  listenable: LocalCarStore.instance,
+                  builder: (context, _) => Text(
+                    user == null
+                        ? LocalCarStore.instance.registration != null
+                            ? AppLocalizations.of(context)!
+                                .settingsSignInWithCar
+                            : AppLocalizations.of(context)!
+                                .settingsSignInWithoutCar
+                        : AppLocalizations.of(context)!.carsStaySaved,
                     style:
-                        TextStyle(color: context.palette.muted, fontSize: 12)),
+                        TextStyle(color: context.palette.muted, fontSize: 12),
+                  ),
+                ),
                 trailing: _signingOut
                     ? SizedBox(
                         width: 20,
@@ -324,50 +349,57 @@ class _ProfileScreenState extends State<ProfileScreen>
                             strokeWidth: 2, color: context.palette.accent))
                     : Icon(Icons.chevron_right,
                         color: context.palette.muted, size: 20),
-                onTap: _signingOut ? null : _signOut,
+                onTap: _signingOut
+                    ? null
+                    : user == null
+                        ? () => openLocalSignIn(context)
+                        : _signOut,
               ),
             ]),
             const SizedBox(height: 28),
-            _heading(AppLocalizations.of(context)!.deleteAccount,
-                AppLocalizations.of(context)!.deleteDescription),
-            _card([
-              ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                leading: Icon(Icons.person_remove_outlined,
-                    color: context.palette.error),
-                title: Text(AppLocalizations.of(context)!.deleteAccount,
-                    style: TextStyle(
-                        color: context.palette.error,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
-                subtitle: Text(AppLocalizations.of(context)!.cannotUndo,
-                    style:
-                        TextStyle(color: context.palette.muted, fontSize: 12)),
-                trailing:
-                    Icon(Icons.chevron_right, color: context.palette.muted),
-                onTap: _signingOut || user == null
-                    ? null
-                    : () {
-                        final service = AccountDeletionService();
-                        Navigator.of(context).push(MaterialPageRoute<void>(
-                          settings: const RouteSettings(name: 'delete_account'),
-                          builder: (_) => DeleteAccountScreen(
-                            email: user.email,
-                            usesApple: user.providerData.any((provider) =>
-                                provider.providerId == 'apple.com'),
-                            requiresPassword: !user.providerData.any(
-                                    (provider) =>
-                                        provider.providerId == 'apple.com') &&
-                                user.providerData.any((provider) =>
-                                    provider.providerId == 'password'),
-                            onDelete: (password) =>
-                                service.delete(password: password),
-                          ),
-                        ));
-                      },
-              ),
-            ]),
+            if (user != null) ...[
+              _heading(AppLocalizations.of(context)!.deleteAccount,
+                  AppLocalizations.of(context)!.deleteDescription),
+              _card([
+                ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  leading: Icon(Icons.person_remove_outlined,
+                      color: context.palette.error),
+                  title: Text(AppLocalizations.of(context)!.deleteAccount,
+                      style: TextStyle(
+                          color: context.palette.error,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700)),
+                  subtitle: Text(AppLocalizations.of(context)!.cannotUndo,
+                      style: TextStyle(
+                          color: context.palette.muted, fontSize: 12)),
+                  trailing:
+                      Icon(Icons.chevron_right, color: context.palette.muted),
+                  onTap: _signingOut
+                      ? null
+                      : () {
+                          final service = AccountDeletionService();
+                          Navigator.of(context).push(MaterialPageRoute<void>(
+                            settings:
+                                const RouteSettings(name: 'delete_account'),
+                            builder: (_) => DeleteAccountScreen(
+                              email: user.email,
+                              usesApple: user.providerData.any((provider) =>
+                                  provider.providerId == 'apple.com'),
+                              requiresPassword: !user.providerData.any(
+                                      (provider) =>
+                                          provider.providerId == 'apple.com') &&
+                                  user.providerData.any((provider) =>
+                                      provider.providerId == 'password'),
+                              onDelete: (password) =>
+                                  service.delete(password: password),
+                            ),
+                          ));
+                        },
+                ),
+              ]),
+            ],
             const SizedBox(height: 32),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(Icons.directions_car_outlined,

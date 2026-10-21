@@ -918,4 +918,102 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get languageRomanian => 'Română';
+
+  @override
+  String get continueWithoutAccount => 'Continuă fără cont';
+
+  @override
+  String get localModeDescription =>
+      'Salvează o mașină pe acest dispozitiv și primește notificări înainte de expirare. Autentifică-te pentru a salva mai multe mașini online și a le accesa de pe alte dispozitive.';
+
+  @override
+  String get usingWithoutAccount => 'Folosești aplicația fără cont';
+
+  @override
+  String get localDataNotice =>
+      'Datele sunt salvate doar pe acest dispozitiv și se pot pierde dacă dezinstalezi aplicația.';
+
+  @override
+  String get localCarLimitTitle =>
+      'Ai deja o mașină salvată pe acest dispozitiv';
+
+  @override
+  String get localCarLimitBody =>
+      'Fără cont, poți salva o singură mașină. Autentifică-te pentru a adăuga mai multe mașini și a le accesa de pe alte dispozitive.';
+
+  @override
+  String get localMaybeLater => 'Mai târziu';
+
+  @override
+  String get localTransferTitle => 'Muți mașina în cont?';
+
+  @override
+  String localTransferBody(String registration) {
+    return 'Vrei să muți mașina $registration și datele de expirare de pe acest dispozitiv în contul tău?';
+  }
+
+  @override
+  String get localTransferMove => 'Mută în contul meu';
+
+  @override
+  String get localTransferDelete => 'Șterge de pe acest dispozitiv';
+
+  @override
+  String get localDeleteTitle => 'Ștergi mașina de pe acest dispozitiv?';
+
+  @override
+  String localDeleteBody(String registration) {
+    return 'Mașina $registration și datele sale de expirare vor fi șterse de pe acest dispozitiv. Această acțiune nu poate fi anulată.';
+  }
+
+  @override
+  String get localDeleteContinue => 'Șterge și continuă';
+
+  @override
+  String get localGoBack => 'Înapoi';
+
+  @override
+  String get localDuplicateTitle => 'Această mașină există deja în cont';
+
+  @override
+  String localDuplicateBody(String registration) {
+    return 'Pentru $registration, există date de expirare salvate atât pe acest dispozitiv, cât și în contul tău. Ce date vrei să păstrezi?';
+  }
+
+  @override
+  String get localUseDevice => 'Folosește datele de pe acest dispozitiv';
+
+  @override
+  String get localKeepAccount => 'Păstrează datele din contul meu';
+
+  @override
+  String get localTransferSaving => 'Se salvează mașina în cont…';
+
+  @override
+  String get localTransferSuccess => 'Mașina a fost salvată în cont.';
+
+  @override
+  String get localTransferFailure =>
+      'Nu am putut salva mașina în cont. Datele sunt în continuare păstrate pe acest dispozitiv. Încearcă din nou.';
+
+  @override
+  String get localTryAgain => 'Încearcă din nou';
+
+  @override
+  String get localDeviceDates => 'Pe acest dispozitiv';
+
+  @override
+  String get localAccountDates => 'În contul tău';
+
+  @override
+  String get signInBenefits =>
+      'Autentifică-te pentru mai multe mașini și acces de pe alte dispozitive.';
+
+  @override
+  String get settingsSignInWithCar =>
+      'Gestionează mai multe mașini de pe orice dispozitiv. Păstrează și mașina salvată.';
+
+  @override
+  String get settingsSignInWithoutCar =>
+      'Autentifică-te pentru a gestiona mai multe mașini de pe orice dispozitiv.';
 }

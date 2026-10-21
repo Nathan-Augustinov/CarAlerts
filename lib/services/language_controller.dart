@@ -1,3 +1,4 @@
+import 'local_car_store.dart';
 import '../l10n/device_language.dart';
 import 'crash_reporting_service.dart';
 import 'user_settings_service.dart';
@@ -29,12 +30,20 @@ class LanguageController extends ChangeNotifier {
           .collection('settings')
           .doc('user_settings');
 
+  void loadLocalLanguage() {
+    _locale =
+        Locale(LocalCarStore.instance.language ?? _initialLocale.languageCode);
+    notifyListeners();
+  }
+
   void bindUser(String? uid) {
     if (_user == uid) return;
     _subscription?.cancel();
     final binding = ++_binding;
     _user = uid;
-    _locale = _initialLocale;
+    _locale = uid == null
+        ? Locale(LocalCarStore.instance.language ?? _initialLocale.languageCode)
+        : _initialLocale;
     _saving = false;
     notifyListeners();
     if (uid == null) return;
@@ -60,7 +69,14 @@ class LanguageController extends ChangeNotifier {
   Future<void> select(String code) async {
     if (!const ['en', 'ro'].contains(code)) throw ArgumentError.value(code);
     final uid = _user;
-    if (uid == null) throw StateError('No signed-in account');
+    if (uid == null) {
+      await LocalCarStore.instance.setLanguage(code);
+      if (_user == null) {
+        _locale = Locale(code);
+        notifyListeners();
+      }
+      return;
+    }
     if (_saving) return;
     final binding = _binding;
     final previous = _locale;

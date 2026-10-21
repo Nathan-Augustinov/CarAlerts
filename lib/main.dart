@@ -1,3 +1,8 @@
+import 'services/reminder_target.dart';
+import 'services/session_route.dart';
+import 'services/local_car_store.dart';
+import 'services/car_store.dart';
+import 'screens/local_transfer_screen.dart';
 import 'services/crash_navigation_observer.dart';
 import 'services/crash_reporting_service.dart';
 import 'l10n/app_localizations.dart';
@@ -6,10 +11,7 @@ import 'package:flutter/services.dart';
 import 'services/appearance_controller.dart';
 import 'theme/app_theme.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'services/notifications_service.dart';
-import 'models/car.dart';
 import 'screens/add_or_edit_car_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +32,8 @@ void main() async {
   await reporting.setUser(FirebaseAuth.instance.currentUser?.uid);
   reporting.installHandlers();
   await AppearanceController.instance.load();
+  await LocalCarStore.instance.load();
+  LanguageController.instance.loadLocalLanguage();
   runApp(const MyApp());
 }
 
@@ -55,7 +59,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _notifications.onTap = _openReminder;
     LanguageController.instance.addListener(_languageChanged);
+    LocalCarStore.instance.addListener(_localChanged);
     _auth = _authState.listen((user) {
+      if (user != null) LocalCarStore.instance.active = false;
       if (user == null) {
         CrashNavigationObserver.homeScreen = 'sign_in';
         unawaited(CrashReportingService.instance.screen('sign_in'));
@@ -67,6 +73,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       _navigator.currentState?.popUntil((route) => route.isFirst);
       _refresh();
     });
+  }
+
+  void _localChanged() {
+    if (mounted) setState(() {});
+    _refresh();
   }
 
   void _languageChanged() {
@@ -88,30 +99,29 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Future<void> _openReminder(String? payload) async {
     unawaited(CrashReportingService.instance.breadcrumb('reminder: opened'));
     try {
-      final data = jsonDecode(payload ?? '') as Map;
-      final user = FirebaseAuth.instance.currentUser?.uid;
-      if (user == null || data['user'] != user) {
-        _message(lookupAppLocalizations(LanguageController.instance.locale)
-            .signInToTheReminderSAccountToViewThisCar);
+      String? currentOwner() =>
+          FirebaseAuth.instance.currentUser?.uid ??
+          (LocalCarStore.instance.active ? localOwner : null);
+      if (FirebaseAuth.instance.currentUser != null &&
+          LocalCarStore.instance.registration != null) {
         return;
       }
-      final doc = await FirebaseFirestore.instance
-          .collection('cars')
-          .doc(user)
-          .collection('user_cars')
-          .doc(data['car'] as String)
-          .get(const GetOptions(source: Source.server))
-          .timeout(const Duration(seconds: 20));
-      if (!mounted || FirebaseAuth.instance.currentUser?.uid != user) return;
-      if (!doc.exists) {
+      final car = await reminderTarget(payload,
+          currentOwner: currentOwner,
+          read: (owner) =>
+              CarStore(owner).read().timeout(const Duration(seconds: 20)));
+      if (!mounted) return;
+      if (car == null) {
         _message(lookupAppLocalizations(LanguageController.instance.locale)
             .thisCarHasBeenRemoved);
         return;
       }
       _navigator.currentState?.push(MaterialPageRoute(
           settings: const RouteSettings(name: 'car_editor'),
-          builder: (_) =>
-              AddOrEditCarScreen(car: Car.fromMap(doc.data()!, doc.id))));
+          builder: (_) => AddOrEditCarScreen(car: car)));
+    } on ReminderOwnerMismatch {
+      _message(lookupAppLocalizations(LanguageController.instance.locale)
+          .signInToTheReminderSAccountToViewThisCar);
     } catch (error, stack) {
       unawaited(CrashReportingService.instance
           .report(error, stack, operation: 'open_reminder'));
@@ -132,6 +142,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _auth?.cancel();
+    LocalCarStore.instance.removeListener(_localChanged);
     LanguageController.instance.removeListener(_languageChanged);
     _notifications.onTap = null;
     super.dispose();
@@ -162,15 +173,23 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SplashScreen();
-            } else if (snapshot.hasData) {
-              if (_renderedUser != snapshot.data!.uid) {
-                _renderedUser = snapshot.data!.uid;
-                mainScreenKey = GlobalKey<MainScreenState>();
-              }
-              return MainScreen();
-            } else {
-              return const SignInScreen();
             }
+            final route = sessionRoute(
+                user: snapshot.data?.uid,
+                localActive: LocalCarStore.instance.active,
+                hasLocalCar: LocalCarStore.instance.registration != null);
+            final owner = snapshot.data?.uid ??
+                (route == SessionRoute.local ? localOwner : null);
+            if (_renderedUser != owner) {
+              _renderedUser = owner;
+              mainScreenKey = GlobalKey<MainScreenState>();
+            }
+            return switch (route) {
+              SessionRoute.transfer =>
+                LocalTransferScreen(key: ValueKey(owner), account: owner!),
+              SessionRoute.account || SessionRoute.local => MainScreen(),
+              SessionRoute.signIn => const SignInScreen(),
+            };
           },
         ),
       ),

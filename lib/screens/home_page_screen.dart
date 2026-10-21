@@ -1,9 +1,10 @@
+import '../services/car_store.dart';
+import '../widgets/local_mode_actions.dart';
 import 'package:car_alerts/services/crash_reporting_service.dart';
 import '../l10n/localized_content.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/calendar_day_refresh.dart';
 import '../theme/app_theme.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
@@ -22,7 +23,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with WidgetsBindingObserver, CalendarDayRefresh<MyHomePage> {
   _DeadlineFilter _filter = _DeadlineFilter.attention;
-  late Stream<QuerySnapshot<Map<String, dynamic>>> _stream;
+  late Stream<Map<String, Map<String, dynamic>>> _stream;
 
   @override
   void initState() {
@@ -31,14 +32,12 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void _connect() {
-    _stream = FirebaseFirestore.instance
-        .collection('cars')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('user_cars')
-        .snapshots();
+    _stream = CarStore.current().watch();
   }
 
   Future<void> _edit([Car? car]) async {
+    if (car == null && !await allowLocalCarCreation(context)) return;
+    if (!mounted) return;
     await Navigator.push(
         context,
         MaterialPageRoute(
@@ -59,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage>
           child: Center(
               child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
-        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        child: StreamBuilder<Map<String, Map<String, dynamic>>>(
           stream: _stream,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
@@ -67,8 +66,8 @@ class _MyHomePageState extends State<MyHomePage>
                   snapshot.error!, snapshot.stackTrace ?? StackTrace.current,
                   operation: 'home_page_screen_load');
             }
-            final cars = snapshot.data?.docs
-                    .map((doc) => Car.fromMap(doc.data(), doc.id))
+            final cars = snapshot.data?.entries
+                    .map((doc) => Car.fromMap(doc.value, doc.key))
                     .toList() ??
                 <Car>[];
             final deadlines = cars

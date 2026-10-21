@@ -1,14 +1,24 @@
+import 'local_car_store.dart';
 import 'notifications_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class AuthenticationService {
+abstract class AuthenticationGateway {
+  Future<User?> signInWithGoogle();
+  Future<User?> signInWithApple();
+  Future<User?> signInWithEmail(String email, String password);
+  Future<User?> createAccount(String email, String password);
+  Future<void> resetPassword(String email);
+}
+
+class AuthenticationService implements AuthenticationGateway {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   // Initialization is shared across service instances and must run only once.
   static final Future<void> _googleInitialization =
       GoogleSignIn.instance.initialize();
 
+  @override
   Future<User?> signInWithGoogle() async {
     await _googleInitialization;
     final GoogleSignInAccount googleUser;
@@ -30,12 +40,14 @@ class AuthenticationService {
     return userCredential.user;
   }
 
+  @override
   Future<User?> signInWithEmail(String email, String password) async {
     final result = await _firebaseAuth.signInWithEmailAndPassword(
         email: email.trim(), password: password);
     return result.user;
   }
 
+  @override
   Future<User?> signInWithApple() async {
     try {
       final provider = AppleAuthProvider()
@@ -53,6 +65,7 @@ class AuthenticationService {
     }
   }
 
+  @override
   Future<User?> createAccount(String email, String password) async {
     final result = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email.trim(), password: password);
@@ -101,6 +114,7 @@ class AuthenticationService {
     await _googleSignIn.signOut();
   }
 
+  @override
   Future<void> resetPassword(String email) =>
       _firebaseAuth.sendPasswordResetEmail(email: email.trim());
 
@@ -112,6 +126,7 @@ class AuthenticationService {
       await _googleInitialization;
       await _googleSignIn.signOut();
     }
+    await LocalCarStore.instance.signOut();
     await _firebaseAuth.signOut();
     await NotificationsService.instance.refresh();
   }

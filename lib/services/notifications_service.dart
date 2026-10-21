@@ -1,3 +1,4 @@
+import 'local_car_store.dart';
 import '../l10n/app_localizations.dart';
 import 'language_controller.dart';
 import 'dart:async';
@@ -101,7 +102,9 @@ class NotificationsService extends ReminderBackend {
   @override
   String get language => LanguageController.instance.locale.languageCode;
   @override
-  String? get user => FirebaseAuth.instance.currentUser?.uid;
+  String? get user =>
+      FirebaseAuth.instance.currentUser?.uid ??
+      (LocalCarStore.instance.active ? localOwner : null);
   @override
   int? get limit => Platform.isIOS ? 64 : null;
   @override
@@ -153,6 +156,7 @@ class NotificationsService extends ReminderBackend {
       tz.getLocation((await _channel.invokeMethod<String>('timezone'))!);
   @override
   Future<Map<String, Map<String, dynamic>>> cars(String user) async {
+    if (user == localOwner) return LocalCarStore.instance.cars;
     final snapshot = await FirebaseFirestore.instance
         .collection('cars')
         .doc(user)

@@ -81,6 +81,11 @@ class MainActivity: FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "car_alerts/notification_permissions")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "loadLocalData" -> result.success(getSharedPreferences("local_car", MODE_PRIVATE).getString("record", "{}"))
+                    "saveLocalData" -> {
+                        if (getSharedPreferences("local_car", MODE_PRIVATE).edit().putString("record", call.arguments as String).commit()) result.success(null)
+                        else result.error("storage_failed", "Could not persist local car", null)
+                    }
                     "timezone" -> result.success(java.util.TimeZone.getDefault().id)
                     "loadReminderIds" -> result.success(promptHistory.getString("reminder_ids", "{}"))
                     "saveReminderIds" -> {

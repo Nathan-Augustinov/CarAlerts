@@ -907,4 +907,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageRomanian => 'Romanian';
+
+  @override
+  String get continueWithoutAccount => 'Continue without an account';
+
+  @override
+  String get localModeDescription =>
+      'Save one car on this device and receive reminders. Sign in to save multiple cars online and access them across devices.';
+
+  @override
+  String get usingWithoutAccount => 'Using without an account';
+
+  @override
+  String get localDataNotice =>
+      'Your data is saved only on this device and may be lost if you uninstall the app.';
+
+  @override
+  String get localCarLimitTitle =>
+      'You already have a car saved on this device';
+
+  @override
+  String get localCarLimitBody =>
+      'Without an account, you can save one car. Sign in to add multiple cars and access them across devices.';
+
+  @override
+  String get localMaybeLater => 'Maybe later';
+
+  @override
+  String get localTransferTitle => 'Move your car to your account?';
+
+  @override
+  String localTransferBody(String registration) {
+    return 'Move $registration and its expiry dates from this device to your account?';
+  }
+
+  @override
+  String get localTransferMove => 'Move to my account';
+
+  @override
+  String get localTransferDelete => 'Delete from this device';
+
+  @override
+  String get localDeleteTitle => 'Delete this car from your device?';
+
+  @override
+  String localDeleteBody(String registration) {
+    return '$registration and its expiry dates will be deleted from this device. This cannot be undone.';
+  }
+
+  @override
+  String get localDeleteContinue => 'Delete and continue';
+
+  @override
+  String get localGoBack => 'Go back';
+
+  @override
+  String get localDuplicateTitle => 'This car already exists in your account';
+
+  @override
+  String localDuplicateBody(String registration) {
+    return '$registration has expiry dates saved both on this device and in your account. Which would you like to keep?';
+  }
+
+  @override
+  String get localUseDevice => 'Use this device’s data';
+
+  @override
+  String get localKeepAccount => 'Keep my account’s data';
+
+  @override
+  String get localTransferSaving => 'Saving your car to your account…';
+
+  @override
+  String get localTransferSuccess => 'Your car has been saved to your account.';
+
+  @override
+  String get localTransferFailure =>
+      'We couldn’t save your car to your account. Your data is still saved on this device. Please try again.';
+
+  @override
+  String get localTryAgain => 'Try again';
+
+  @override
+  String get localDeviceDates => 'On this device';
+
+  @override
+  String get localAccountDates => 'In your account';
+
+  @override
+  String get signInBenefits =>
+      'Sign in for multiple cars and access across devices.';
+
+  @override
+  String get settingsSignInWithCar =>
+      'Manage multiple cars across devices. Bring your saved car with you.';
+
+  @override
+  String get settingsSignInWithoutCar =>
+      'Sign in to manage multiple cars across devices.';
 }

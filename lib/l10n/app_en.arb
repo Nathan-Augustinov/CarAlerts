@@ -373,5 +373,54 @@
   "appVersion": "App version",
   "unavailable": "Unavailable",
   "languageEnglish": "English",
-  "languageRomanian": "Romanian"
+  "languageRomanian": "Romanian",
+  "continueWithoutAccount": "Continue without an account",
+  "localModeDescription": "Save one car on this device and receive reminders. Sign in to save multiple cars online and access them across devices.",
+  "usingWithoutAccount": "Using without an account",
+  "localDataNotice": "Your data is saved only on this device and may be lost if you uninstall the app.",
+  "localCarLimitTitle": "You already have a car saved on this device",
+  "localCarLimitBody": "Without an account, you can save one car. Sign in to add multiple cars and access them across devices.",
+  "localMaybeLater": "Maybe later",
+  "localTransferTitle": "Move your car to your account?",
+  "localTransferBody": "Move {registration} and its expiry dates from this device to your account?",
+  "@localTransferBody": {
+    "placeholders": {
+      "registration": {
+        "type": "String"
+      }
+    }
+  },
+  "localTransferMove": "Move to my account",
+  "localTransferDelete": "Delete from this device",
+  "localDeleteTitle": "Delete this car from your device?",
+  "localDeleteBody": "{registration} and its expiry dates will be deleted from this device. This cannot be undone.",
+  "@localDeleteBody": {
+    "placeholders": {
+      "registration": {
+        "type": "String"
+      }
+    }
+  },
+  "localDeleteContinue": "Delete and continue",
+  "localGoBack": "Go back",
+  "localDuplicateTitle": "This car already exists in your account",
+  "localDuplicateBody": "{registration} has expiry dates saved both on this device and in your account. Which would you like to keep?",
+  "@localDuplicateBody": {
+    "placeholders": {
+      "registration": {
+        "type": "String"
+      }
+    }
+  },
+  "localUseDevice": "Use this device’s data",
+  "localKeepAccount": "Keep my account’s data",
+  "localTransferSaving": "Saving your car to your account…",
+  "localTransferSuccess": "Your car has been saved to your account.",
+  "localTransferFailure": "We couldn’t save your car to your account. Your data is still saved on this device. Please try again.",
+  "localTryAgain": "Try again",
+  "localDeviceDates": "On this device",
+  "localAccountDates": "In your account",
+  "signInBenefits": "Sign in for multiple cars and access across devices.",
+  "settingsSignInWithCar": "Manage multiple cars across devices. Bring your saved car with you.",
+  "settingsSignInWithoutCar": "Sign in to manage multiple cars across devices."
 }
